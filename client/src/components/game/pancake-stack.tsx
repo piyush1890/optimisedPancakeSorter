@@ -113,7 +113,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
 
     // Create a temporary group for the flipping pancakes
     const flipGroup = new THREE.Group();
-    // Get pancakes from clicked index to the top (not from bottom to clicked index)
+    // Get pancakes from clicked index to the top
     const pancakesToFlip = pancakesRef.current.slice(index);
 
     // Calculate the pivot point for the flip

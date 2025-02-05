@@ -128,11 +128,8 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
 
     groupRef.current.add(flipGroup);
 
-    // Animate the flip around the X-axis
-    gsap.to(flipGroup.rotation, {
-      x: Math.PI,
-      duration: 1,
-      ease: "power2.inOut",
+    // Create a GSAP timeline for the sequence of animations
+    const tl = gsap.timeline({
       onComplete: () => {
         // Reset the rotation
         flipGroup.rotation.x = 0;
@@ -147,6 +144,23 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
         setIsAnimating(false);
         onFlip(index);
       }
+    });
+
+    // Add sequential animations to the timeline
+    tl.to(flipGroup.position, {
+      y: pivotY + 2, // Lift up
+      duration: 0.3,
+      ease: "power2.out"
+    })
+    .to(flipGroup.rotation, {
+      x: Math.PI, // Flip
+      duration: 0.6,
+      ease: "power2.inOut"
+    })
+    .to(flipGroup.position, {
+      y: pivotY, // Drop back
+      duration: 0.3,
+      ease: "bounce.out"
     });
   };
 

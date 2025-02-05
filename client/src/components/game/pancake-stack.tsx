@@ -113,7 +113,8 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
 
     // Create a temporary group for the flipping pancakes
     const flipGroup = new THREE.Group();
-    const pancakesToFlip = pancakesRef.current.slice(0, index + 1);
+    // Get pancakes from clicked index to the top (not from bottom to clicked index)
+    const pancakesToFlip = pancakesRef.current.slice(index);
 
     // Calculate the pivot point for the flip
     const pivotY = (index * stackHeight);
@@ -134,9 +135,10 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
         // Reset the rotation
         flipGroup.rotation.x = 0;
 
-        // Reposition pancakes in reverse order
-        pancakesToFlip.reverse().forEach((pancake, i) => {
-          pancake.position.y = (index - i) * stackHeight;
+        // Reposition pancakes in reverse order starting from the clicked index
+        const reversedPancakes = [...pancakesToFlip].reverse();
+        reversedPancakes.forEach((pancake, i) => {
+          pancake.position.y = (index + i) * stackHeight;
           groupRef.current!.add(pancake);
         });
 

@@ -15,6 +15,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
   const cameraRef = useRef<THREE.PerspectiveCamera>();
   const rendererRef = useRef<THREE.WebGLRenderer>();
   const pancakesRef = useRef<THREE.Mesh[]>([]);
+  const groupRef = useRef<THREE.Group>();
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -23,15 +24,20 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    
+
     renderer.setSize(window.innerWidth, window.innerHeight);
     containerRef.current.appendChild(renderer.domElement);
-    
+
     camera.position.z = 10;
-    
+
     sceneRef.current = scene;
     cameraRef.current = camera;
     rendererRef.current = renderer;
+
+    // Create a group for pancakes
+    const group = new THREE.Group();
+    scene.add(group);
+    groupRef.current = group;
 
     // Create pancakes
     arrangement.forEach((size, index) => {
@@ -41,10 +47,10 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
         specular: 0x404040,
         shininess: 30
       });
-      
+
       const pancake = new THREE.Mesh(geometry, material);
       pancake.position.y = index * 0.6;
-      scene.add(pancake);
+      group.add(pancake);
       pancakesRef.current.push(pancake);
     });
 
@@ -52,7 +58,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(5, 5, 5);
     scene.add(light);
-    
+
     const ambientLight = new THREE.AmbientLight(0x404040);
     scene.add(ambientLight);
 
@@ -98,23 +104,37 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
   }, [isAnimating]);
 
   const flipPancakes = (index: number) => {
-    if (isAnimating) return;
+    if (isAnimating || !groupRef.current) return;
     setIsAnimating(true);
 
+    const stackHeight = 0.6; // Height between pancakes
+    const flipPivot = index * stackHeight; // Pivot point at the clicked pancake
+
+    // Create a temporary group for the flipping pancakes
+    const flipGroup = new THREE.Group();
     const pancakesToFlip = pancakesRef.current.slice(0, index + 1);
-    
-    gsap.to(pancakesToFlip.map(p => p.rotation), {
+
+    // Move pancakes to flip group, maintaining their relative positions
+    pancakesToFlip.forEach(pancake => {
+      flipGroup.add(pancake);
+    });
+
+    // Position flip group at the pivot point
+    flipGroup.position.y = flipPivot;
+    groupRef.current.add(flipGroup);
+
+    gsap.to(flipGroup.rotation, {
       x: Math.PI,
       duration: 1,
       ease: "power2.inOut",
-      stagger: {
-        from: "end",
-        amount: 0.2
-      },
       onComplete: () => {
-        pancakesToFlip.forEach(p => {
-          p.rotation.x = 0;
+        // Reset the rotation and move pancakes back to main group
+        flipGroup.rotation.x = 0;
+        pancakesToFlip.forEach((pancake, i) => {
+          pancake.position.y = (index - i) * stackHeight;
+          groupRef.current!.add(pancake);
         });
+        flipGroup.removeFromParent();
         setIsAnimating(false);
         onFlip(index);
       }

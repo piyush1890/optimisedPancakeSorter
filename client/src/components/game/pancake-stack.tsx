@@ -110,12 +110,12 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     setIsAnimating(true);
 
     const stackHeight = 0.6; // Height between pancakes
+    const liftHeight = 2; // How high to lift the pancakes
 
     // Create a temporary group for the flipping pancakes
     const flipGroup = new THREE.Group();
     // Get pancakes from clicked index to the top
     const pancakesToFlip = pancakesRef.current.slice(index);
-
     // Calculate the pivot point for the flip
     const pivotY = index * stackHeight;
     flipGroup.position.y = pivotY;
@@ -151,7 +151,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
 
     // Add sequential animations to the timeline
     tl.to(flipGroup.position, {
-      y: pivotY + 2, // Lift up
+      y: pivotY + liftHeight, // Lift up
       duration: 0.3,
       ease: "power2.out"
     })

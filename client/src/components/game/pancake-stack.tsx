@@ -28,13 +28,16 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     renderer.setSize(window.innerWidth, window.innerHeight);
     containerRef.current.appendChild(renderer.domElement);
 
+    // Position camera
     camera.position.z = 10;
+    camera.position.y = 2;
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     sceneRef.current = scene;
     cameraRef.current = camera;
     rendererRef.current = renderer;
 
-    // Create a group for pancakes
+    // Create main group for all pancakes
     const group = new THREE.Group();
     scene.add(group);
     groupRef.current = group;
@@ -108,32 +111,42 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     setIsAnimating(true);
 
     const stackHeight = 0.6; // Height between pancakes
-    const flipPivot = index * stackHeight; // Pivot point at the clicked pancake
 
     // Create a temporary group for the flipping pancakes
     const flipGroup = new THREE.Group();
     const pancakesToFlip = pancakesRef.current.slice(0, index + 1);
 
-    // Move pancakes to flip group, maintaining their relative positions
-    pancakesToFlip.forEach(pancake => {
+    // Calculate the center position for the flip group
+    const centerY = (index * stackHeight) / 2;
+    flipGroup.position.y = centerY;
+
+    // Move pancakes to flip group, maintaining relative positions
+    pancakesToFlip.forEach((pancake, i) => {
+      const newPosition = new THREE.Object3D();
+      newPosition.position.copy(pancake.position);
+      newPosition.position.y -= centerY;  // Adjust position relative to flip group's center
+      pancake.position.copy(newPosition.position);
       flipGroup.add(pancake);
     });
 
-    // Position flip group at the pivot point
-    flipGroup.position.y = flipPivot;
     groupRef.current.add(flipGroup);
 
+    // Animate the flip
     gsap.to(flipGroup.rotation, {
-      x: Math.PI,
+      z: Math.PI,
       duration: 1,
       ease: "power2.inOut",
       onComplete: () => {
-        // Reset the rotation and move pancakes back to main group
-        flipGroup.rotation.x = 0;
+        // Reset the rotation and reposition pancakes
+        flipGroup.rotation.z = 0;
+
+        // Reposition pancakes in reverse order
         pancakesToFlip.forEach((pancake, i) => {
-          pancake.position.y = (index - i) * stackHeight;
+          const newY = (index - i) * stackHeight;
+          pancake.position.y = newY;
           groupRef.current!.add(pancake);
         });
+
         flipGroup.removeFromParent();
         setIsAnimating(false);
         onFlip(index);

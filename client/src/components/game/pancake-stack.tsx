@@ -117,7 +117,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     const pancakesToFlip = pancakesRef.current.slice(index);
 
     // Calculate the pivot point for the flip
-    const pivotY = (index * stackHeight);
+    const pivotY = index * stackHeight;
     flipGroup.position.y = pivotY;
 
     // Move pancakes to flip group, adjusting their positions relative to pivot
@@ -142,6 +142,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
           groupRef.current!.add(pancake);
         });
 
+        // Clean up the flip group
         flipGroup.removeFromParent();
         setIsAnimating(false);
         onFlip(index);

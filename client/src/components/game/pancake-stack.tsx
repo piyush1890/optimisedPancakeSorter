@@ -66,24 +66,27 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
 
     // Create pancakes
     arrangement.forEach((size, index) => {
-      const geometry = new THREE.BoxGeometry(
-        size * 2, // width
-        0.5, // height
-        2, // depth
-        16, // widthSegments - significantly increased for rounder edges
-        8, // heightSegments - increased for smoother corners
-        16  // depthSegments - significantly increased for rounder edges
+      // Use CylinderGeometry with large radius and small height for slab-like appearance
+      const geometry = new THREE.CylinderGeometry(
+        size, // top radius
+        size, // bottom radius (same for straight sides)
+        0.3, // height (thin for slab-like appearance)
+        32, // radial segments (high for smooth edges)
+        1, // height segments
+        false // open-ended
       );
       const material = new THREE.MeshStandardMaterial({
         color: new THREE.Color(`hsl(${size * 40}, 70%, 50%)`),
-        roughness: 0.5, // Reduced for smoother appearance
-        metalness: 0.2  // Reduced for less harsh edges
+        roughness: 0.4, // Lower roughness for smoother appearance
+        metalness: 0.1  // Low metalness for better edge definition
       });
 
       const pancake = new THREE.Mesh(geometry, material);
       pancake.position.y = index * 0.6;
       pancake.castShadow = true;
       pancake.receiveShadow = true;
+      // Rotate the cylinder to be viewed from the front
+      pancake.rotation.x = Math.PI / 2;
       group.add(pancake);
       pancakesRef.current.push(pancake);
     });

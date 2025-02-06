@@ -3,11 +3,15 @@ import { useGameState } from "@/hooks/use-game-state";
 import { PancakeStack } from "@/components/game/pancake-stack";
 import { LevelComplete } from "@/components/game/level-complete";
 import { Progress } from "@/components/ui/progress";
+import { Switch } from "@/components/ui/switch";
+import { Volume2, VolumeX } from "lucide-react";
+import { soundEffect } from "@/lib/sound";
 
 export default function Game() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showComplete, setShowComplete] = useState(false);
   const [isVictory, setIsVictory] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const { currentLevel, moves, arrangement, level, flipStack, checkWin, nextLevel, stars } = useGameState();
 
   // Reset animation states when level changes
@@ -16,6 +20,11 @@ export default function Game() {
     setIsVictory(false);
     setShowComplete(false);
   }, [currentLevel]);
+
+  // Update sound effect state when toggle changes
+  useEffect(() => {
+    soundEffect.setEnabled(soundEnabled);
+  }, [soundEnabled]);
 
   // Check win condition whenever arrangement changes and animation is complete
   useEffect(() => {
@@ -48,7 +57,21 @@ export default function Game() {
         <div className="container max-w-lg mx-auto">
           <div className="flex justify-between items-center mb-2">
             <h2 className="text-lg font-bold text-white/90">Level {currentLevel}</h2>
-            <p className="text-white/70">Moves: {moves}</p>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                {soundEnabled ? (
+                  <Volume2 className="h-5 w-5 text-white/70" />
+                ) : (
+                  <VolumeX className="h-5 w-5 text-white/70" />
+                )}
+                <Switch
+                  checked={soundEnabled}
+                  onCheckedChange={setSoundEnabled}
+                  className="data-[state=checked]:bg-white/30"
+                />
+              </div>
+              <p className="text-white/70">Moves: {moves}</p>
+            </div>
           </div>
           <Progress value={moves ? (level?.minMoves || 0) / moves * 100 : 100} className="bg-white/20" />
         </div>

@@ -2,6 +2,7 @@
 export class SoundEffect {
   private audioContext: AudioContext;
   private gainNode: GainNode;
+  private enabled: boolean = true;
 
   constructor() {
     this.audioContext = new AudioContext();
@@ -10,7 +11,13 @@ export class SoundEffect {
     this.gainNode.gain.value = 0.3; // Set volume to 30%
   }
 
+  setEnabled(enabled: boolean) {
+    this.enabled = enabled;
+  }
+
   playClick() {
+    if (!this.enabled) return;
+
     const oscillator = this.audioContext.createOscillator();
     oscillator.connect(this.gainNode);
     oscillator.type = 'sine';
@@ -24,6 +31,8 @@ export class SoundEffect {
   }
 
   playVictory() {
+    if (!this.enabled) return;
+
     const now = this.audioContext.currentTime;
 
     // Create oscillator for trumpet-like sound

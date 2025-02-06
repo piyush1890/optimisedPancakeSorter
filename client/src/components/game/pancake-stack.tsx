@@ -38,8 +38,8 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     renderer.setSize(window.innerWidth, window.innerHeight);
     containerRef.current.appendChild(renderer.domElement);
 
-    // Position camera for better view of flipping animation
-    camera.position.set(0, 4, 8);
+    // Position camera for better side view with slight tilt
+    camera.position.set(8, 2, 2); // More to the side, lower height, slight depth
     camera.lookAt(0, 0, 0);
 
     sceneRef.current = scene;
@@ -66,7 +66,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
 
     // Create pancakes
     arrangement.forEach((size, index) => {
-      const geometry = new THREE.CylinderGeometry(size * 0.8, size * 0.8, 0.3, 32);
+      const geometry = new THREE.BoxGeometry(size * 2, 0.5, 2);
       const material = new THREE.MeshStandardMaterial({ 
         color: new THREE.Color(`hsl(${size * 40}, 70%, 50%)`),
         roughness: 0.7,

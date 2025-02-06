@@ -16,7 +16,7 @@ export const TutorialHand: FC<TutorialHandProps> = ({ onClick, positions }) => {
   return (
     <motion.div
       className="fixed pointer-events-none z-[100]"
-      initial={{ scale: 0, opacity: 0 }}
+      initial={{ scale: 1, opacity: 1 }}
       animate={{
         scale: 1,
         opacity: 1,
@@ -39,37 +39,21 @@ export const TutorialHand: FC<TutorialHandProps> = ({ onClick, positions }) => {
           fill="none" 
           className="drop-shadow-lg"
         >
+          {/* Hand base */}
           <path
-            d="M12 1C12 1 12.5 2 12.5 4C12.5 6 12 7 12 7C12 7 11.5 6 11.5 4C11.5 2 12 1 12 1Z"
+            d="M12 22c-1.5 0-2.5-0.5-3.5-1.5S7 18.5 7 17V8c0-1.1 0.9-2 2-2s2 0.9 2 2v5h1V4c0-1.1 0.9-2 2-2s2 0.9 2 2v9h1V6c0-1.1 0.9-2 2-2s2 0.9 2 2v7"
             fill="#FFB800"
             stroke="#CC9200"
             strokeWidth="0.5"
           />
+          {/* Pointing finger */}
           <path
-            d="M12 7C12 7 13 8 13 11C13 14 12 16 12 16C12 16 11 14 11 11C11 8 12 7 12 7Z"
-            fill="#FFB800"
-            stroke="#CC9200"
-            strokeWidth="0.5"
-          />
-          <path
-            d="M12 16C12 16 13 17 13 19C13 21 12 22 12 22C12 22 11 21 11 19C11 17 12 16 12 16Z"
+            d="M14 13V4c0-1.1 0.9-2 2-2s2 0.9 2 2v9"
             fill="#FFB800"
             stroke="#CC9200"
             strokeWidth="0.5"
           />
         </svg>
-        <motion.div
-          className="absolute inset-0 bg-white/20 rounded-full blur-xl"
-          animate={{
-            scale: [1, 1.5, 1],
-            opacity: [0.5, 0.8, 0.5],
-          }}
-          transition={{
-            duration: 1,
-            repeat: Infinity,
-            repeatType: "reverse"
-          }}
-        />
       </div>
     </motion.div>
   );

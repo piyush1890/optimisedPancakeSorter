@@ -10,6 +10,13 @@ export default function Game() {
   const [isVictory, setIsVictory] = useState(false);
   const { currentLevel, moves, arrangement, level, flipStack, checkWin, nextLevel, stars } = useGameState();
 
+  // Reset animation states when level changes
+  useEffect(() => {
+    setIsAnimating(false);
+    setIsVictory(false);
+    setShowComplete(false);
+  }, [currentLevel]);
+
   // Check win condition whenever arrangement changes and animation is complete
   useEffect(() => {
     const checkWinCondition = () => {

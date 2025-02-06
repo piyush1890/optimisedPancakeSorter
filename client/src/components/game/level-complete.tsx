@@ -13,7 +13,7 @@ interface LevelCompleteProps {
 export function LevelComplete({ isOpen, onClose, stars, moves, level }: LevelCompleteProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-background/60 backdrop-blur-md border-none">
+      <DialogContent className="sm:max-w-md bg-background/30 backdrop-blur-md border-white/20">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-bold text-white">
             Level {level} Complete!

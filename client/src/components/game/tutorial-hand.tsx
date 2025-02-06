@@ -34,7 +34,7 @@ export const TutorialHand: FC<TutorialHandProps> = ({ onClick, positions }) => {
     >
       <div className="relative cursor-pointer" onClick={onClick} style={{ pointerEvents: 'auto' }}>
         <MousePointer 
-          className="w-24 h-24 text-white drop-shadow-lg transform -rotate-45" 
+          className="w-24 h-24 text-yellow-400 drop-shadow-lg transform -rotate-45" 
           strokeWidth={1.5}
         />
         <motion.div
@@ -52,4 +52,4 @@ export const TutorialHand: FC<TutorialHandProps> = ({ onClick, positions }) => {
       </div>
     </motion.div>
   );
-};
+}

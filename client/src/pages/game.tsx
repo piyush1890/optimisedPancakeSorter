@@ -128,7 +128,7 @@ export default function Game() {
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-blue-600 via-primary/40 to-indigo-400">
       {showTutorial && tutorialPositions.length > 0 && (
-        <div className="fixed inset-0" style={{ zIndex: 9999 }}>
+        <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 9999 }}>
           <TutorialHand
             positions={tutorialPositions}
             onClick={handleTutorialComplete}
@@ -194,4 +194,5 @@ export default function Game() {
       />
     </div>
   );
+
 }

@@ -13,7 +13,19 @@ export default function Game() {
   useEffect(() => {
     const checkWinCondition = () => {
       if (checkWin() && !isAnimating && !showComplete) {
-        setShowComplete(true);
+        // When level is complete, trigger shatter effect first
+        setIsAnimating(true);
+        const pancakeStack = document.querySelector('canvas')!;
+        const event = new MouseEvent('click', {
+          clientX: pancakeStack.width / 2,
+          clientY: pancakeStack.height / 2
+        });
+        pancakeStack.dispatchEvent(event);
+
+        // Show completion dialog after a delay
+        setTimeout(() => {
+          setShowComplete(true);
+        }, 1500); // Delay matches the shatter animation duration
       }
     };
 
@@ -25,7 +37,6 @@ export default function Game() {
 
   const handleLevelComplete = () => {
     setShowComplete(false);
-    setIsAnimating(true); // Start animation phase
     nextLevel();
   };
 

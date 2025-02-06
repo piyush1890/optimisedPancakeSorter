@@ -278,7 +278,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
       if (intersects.length > 0) {
         soundEffect.playClick();
         const clickedIndex = pancakesRef.current.indexOf(intersects[0].object as THREE.Mesh);
-        createShatterEffect();
+        flipPancakes(clickedIndex);
         onFlip(clickedIndex);
       }
     }
@@ -326,7 +326,6 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
         pancakesRef.current.sort((a, b) => a.position.y - b.position.y);
         flipGroup.removeFromParent();
         setIsAnimating(false);
-        onFlip(index);
       }
     });
 

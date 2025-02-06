@@ -9,11 +9,11 @@ export default function Game() {
   const [showComplete, setShowComplete] = useState(false);
   const { currentLevel, moves, arrangement, level, flipStack, checkWin, nextLevel, stars } = useGameState();
 
-  const handleWin = () => {
-    if (!showComplete) {
+  useEffect(() => {
+    if (checkWin() && !isAnimating && !showComplete) {
       setShowComplete(true);
     }
-  };
+  }, [arrangement, checkWin, isAnimating]);
 
   const handleLevelComplete = () => {
     setShowComplete(false);
@@ -39,7 +39,6 @@ export default function Game() {
         onFlip={flipStack}
         isAnimating={isAnimating}
         setIsAnimating={setIsAnimating}
-        onWin={handleWin}
       />
 
       {/* Level Complete Dialog */}

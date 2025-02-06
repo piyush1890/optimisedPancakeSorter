@@ -38,8 +38,8 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     renderer.setSize(window.innerWidth, window.innerHeight);
     containerRef.current.appendChild(renderer.domElement);
 
-    // Position camera for better side view with slight tilt
-    camera.position.set(8, 2, 2); // More to the side, lower height, slight depth
+    // Position camera for front view with slight tilt
+    camera.position.set(0, 2, 10); // Mostly front (z), slight elevation (y)
     camera.lookAt(0, 0, 0);
 
     sceneRef.current = scene;
@@ -171,13 +171,13 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     const pancakesToFlip = pancakesRef.current.slice(index);
 
     // Calculate the pivot point for the flip
-    const pivotY = (index + pancakesRef.current.length)/2 * stackHeight;
+    const pivotY = (index + pancakesToFlip.length)/2 * stackHeight;
     flipGroup.position.y = pivotY;
 
     // Calculate final Y positions for each pancake (in reverse order after flip)
     const finalPositions = pancakesToFlip.map((_, i) => ({
-      pancake: pancakesToFlip[i], // Reverse order
-      finalY: pancakesRef.current[( pancakesRef.current.length -1 - i)].position.y // New position starting from click index
+      pancake: pancakesToFlip[pancakesToFlip.length - 1 - i], // Reverse order
+      finalY: (index + i) * stackHeight // New position starting from click index
     }));
 
     // Move pancakes to flip group, adjusting their positions relative to pivot
@@ -203,11 +203,11 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
 
         //sort pancakeRef by y position
         pancakesRef.current.sort((a, b) => a.position.y - b.position.y)
-              // Clean up the flip group
+        // Clean up the flip group
         console.log(pancakesRef)
         flipGroup.removeFromParent();
         setIsAnimating(false);
-        //onFlip(index);
+        onFlip(index);
       }
     });
 

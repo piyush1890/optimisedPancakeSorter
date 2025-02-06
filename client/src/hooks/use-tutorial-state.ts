@@ -7,15 +7,17 @@ interface TutorialState {
 
 const TUTORIAL_STORAGE_KEY = 'pancakeGameTutorial';
 
+const getInitialState = (): TutorialState => {
+  try {
+    const saved = localStorage.getItem(TUTORIAL_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : { level1Completed: false, level2Completed: false };
+  } catch {
+    return { level1Completed: false, level2Completed: false };
+  }
+};
+
 export function useTutorialState() {
-  const [tutorialState, setTutorialState] = useState<TutorialState>(() => {
-    try {
-      const saved = localStorage.getItem(TUTORIAL_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : { level1Completed: false, level2Completed: false };
-    } catch {
-      return { level1Completed: false, level2Completed: false };
-    }
-  });
+  const [tutorialState, setTutorialState] = useState<TutorialState>(getInitialState);
 
   useEffect(() => {
     localStorage.setItem(TUTORIAL_STORAGE_KEY, JSON.stringify(tutorialState));

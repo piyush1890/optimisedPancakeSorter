@@ -1,12 +1,13 @@
 import { motion } from "framer-motion";
 import { MousePointer } from "lucide-react";
+import { type FC } from "react";
 
 interface TutorialHandProps {
   onClick: () => void;
   positions: { x: number; y: number }[];
 }
 
-export function TutorialHand({ onClick, positions }: TutorialHandProps) {
+export const TutorialHand: FC<TutorialHandProps> = ({ onClick, positions }) => {
   return (
     <motion.div
       className="fixed pointer-events-none z-50"
@@ -42,4 +43,4 @@ export function TutorialHand({ onClick, positions }: TutorialHandProps) {
       </div>
     </motion.div>
   );
-}
+};

@@ -55,24 +55,24 @@ export default function Game() {
     const checkWinCondition = () => {
       if (checkWin() && !isAnimating && !showComplete && !isVictory) {
         setIsVictory(true);
-        // Delay showing the completion dialog to allow for victory animation
         setTimeout(() => {
           setShowComplete(true);
         }, 2000);
       }
     };
 
-    // Only check win condition if we're not currently animating
     if (!isAnimating) {
       checkWinCondition();
     }
   }, [arrangement, checkWin, isAnimating, showComplete, isVictory]);
 
   const handleLevelComplete = () => {
-    console.log('Level complete handler called');
     setShowComplete(false);
     setIsVictory(false);
+    const nextLevelNumber = currentLevel + 1;
     nextLevel();
+    // Update the URL to reflect the new level
+    navigate(`/game/${nextLevelNumber}`);
   };
 
   return (

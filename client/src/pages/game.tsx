@@ -29,15 +29,15 @@ export default function Game() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-primary/20 to-slate-900">
       {/* HUD */}
-      <div className="fixed top-0 left-0 right-0 p-4 z-10">
+      <div className="fixed top-0 left-0 right-0 p-4 z-10 bg-gradient-to-b from-black/30 to-transparent">
         <div className="container max-w-lg mx-auto">
           <div className="flex justify-between items-center mb-2">
-            <h2 className="text-lg font-bold">Level {currentLevel}</h2>
-            <p className="text-muted-foreground">Moves: {moves}</p>
+            <h2 className="text-lg font-bold text-white/90">Level {currentLevel}</h2>
+            <p className="text-white/70">Moves: {moves}</p>
           </div>
-          <Progress value={moves ? (level?.minMoves || 0) / moves * 100 : 100} />
+          <Progress value={moves ? (level?.minMoves || 0) / moves * 100 : 100} className="bg-white/10" />
         </div>
       </div>
 

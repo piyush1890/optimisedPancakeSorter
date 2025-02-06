@@ -22,7 +22,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
 
     // Setup scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1a1a1a); // Dark background for better contrast
+    scene.background = new THREE.Color(0x0a0a1a); // Darker blue background
 
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({
@@ -51,10 +51,10 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     scene.add(group);
     groupRef.current = group;
 
-    // Add ground plane to receive shadows
+    // Ground plane with gradient material
     const groundGeometry = new THREE.PlaneGeometry(20, 20);
     const groundMaterial = new THREE.MeshStandardMaterial({
-      color: 0x222222,
+      color: 0x1a1a2e,
       roughness: 0.8,
       metalness: 0.2
     });
@@ -113,9 +113,8 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
       pancakesRef.current.push(pancake);
     });
 
-    // Add lighting
-    // Main directional light
-    const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+    // Update lighting
+    const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
     mainLight.position.set(5, 10, 5);
     mainLight.castShadow = true;
     mainLight.shadow.mapSize.width = 2048;
@@ -128,14 +127,15 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     mainLight.shadow.camera.bottom = -10;
     scene.add(mainLight);
 
-    // Ambient light for general illumination
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+    // Ambient light for better overall illumination
+    const ambientLight = new THREE.AmbientLight(0x404080, 0.6); // Blueish ambient light
     scene.add(ambientLight);
 
-    // Add a soft fill light from the opposite side
-    const fillLight = new THREE.DirectionalLight(0x4444ff, 0.3);
-    fillLight.position.set(-5, 3, -5);
-    scene.add(fillLight);
+    // Add rim light for better depth
+    const rimLight = new THREE.DirectionalLight(0x4444ff, 0.5);
+    rimLight.position.set(-5, 3, -5);
+    scene.add(rimLight);
+
 
     // Animation loop
     function animate() {

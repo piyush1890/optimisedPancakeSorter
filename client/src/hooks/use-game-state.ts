@@ -6,6 +6,7 @@ export function useGameState() {
   const [currentLevel, setCurrentLevel] = useState(1);
   const [moves, setMoves] = useState(0);
   const [totalStars, setTotalStars] = useState(0);
+  const [levelStars, setLevelStars] = useState<Record<number, number>>({});
   const level = levels.find(l => l.id === currentLevel);
   const [arrangement, setArrangement] = useState(level?.arrangement || []);
   const { toast } = useToast();
@@ -24,10 +25,23 @@ export function useGameState() {
     return isAscendingOrder(arrangement);
   }, [arrangement]);
 
+  const goToLevel = useCallback((levelId: number) => {
+    const levelData = levels.find(l => l.id === levelId);
+    if (levelData) {
+      setCurrentLevel(levelId);
+      setArrangement(levelData.arrangement);
+      setMoves(0);
+    }
+  }, []);
+
   const nextLevel = useCallback(() => {
-    // Add current level stars to total before moving to next level
+    // Add current level stars to total and level record before moving to next level
     const currentStars = level ? calculateStars(moves, level.minMoves) : 0;
     setTotalStars(prev => prev + currentStars);
+    setLevelStars(prev => ({
+      ...prev,
+      [currentLevel]: Math.max(currentStars, prev[currentLevel] || 0)
+    }));
 
     const nextLevelData = levels.find(l => l.id === currentLevel + 1);
     if (nextLevelData) {
@@ -50,7 +64,9 @@ export function useGameState() {
     flipStack,
     checkWin,
     nextLevel,
+    goToLevel,
     stars: level ? calculateStars(moves, level.minMoves) : 0,
-    totalStars
+    totalStars,
+    levelStars
   };
 }

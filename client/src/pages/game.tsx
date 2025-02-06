@@ -1,18 +1,42 @@
 import { useState, useEffect } from "react";
+import { useRoute, useLocation } from "wouter";
 import { useGameState } from "@/hooks/use-game-state";
 import { PancakeStack } from "@/components/game/pancake-stack";
 import { LevelComplete } from "@/components/game/level-complete";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { Volume2, VolumeX, Star } from "lucide-react";
+import { Volume2, VolumeX, Star, ChevronLeft } from "lucide-react";
 import { soundEffect } from "@/lib/sound";
+import { Button } from "@/components/ui/button";
 
 export default function Game() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showComplete, setShowComplete] = useState(false);
   const [isVictory, setIsVictory] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const { currentLevel, moves, arrangement, level, flipStack, checkWin, nextLevel, stars, totalStars } = useGameState();
+  const [, params] = useRoute("/game/:id");
+  const [, navigate] = useLocation();
+
+  const { 
+    currentLevel, 
+    moves, 
+    arrangement, 
+    level, 
+    flipStack, 
+    checkWin, 
+    nextLevel, 
+    goToLevel,
+    stars, 
+    totalStars 
+  } = useGameState();
+
+  // Set the level from URL parameter
+  useEffect(() => {
+    if (params?.id) {
+      const levelId = parseInt(params.id);
+      goToLevel(levelId);
+    }
+  }, [params?.id, goToLevel]);
 
   // Reset animation states when level changes
   useEffect(() => {
@@ -57,6 +81,14 @@ export default function Game() {
         <div className="container max-w-lg mx-auto">
           <div className="flex justify-between items-center mb-2">
             <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white/70 hover:text-white hover:bg-white/20"
+                onClick={() => navigate("/")}
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </Button>
               <h2 className="text-lg font-bold text-white/90">Level {currentLevel}</h2>
               <div className="flex items-center gap-1">
                 <Star className="w-5 h-5 text-yellow-400 fill-current" />

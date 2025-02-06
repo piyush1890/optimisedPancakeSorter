@@ -18,20 +18,17 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
   const pancakesRef = useRef<THREE.Mesh[]>([]);
   const groupRef = useRef<THREE.Group>();
 
+  // Setup scene and renderer
   useEffect(() => {
     if (!containerRef.current) return;
 
     // Setup scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1a1a3a); // Lighter blue background
+    scene.background = new THREE.Color(0x1a1a3a);
 
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
-      shadowMap: {
-        enabled: true,
-        type: THREE.PCFSoftShadowMap
-      }
     });
 
     renderer.shadowMap.enabled = true;
@@ -39,7 +36,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     renderer.setSize(window.innerWidth, window.innerHeight);
     containerRef.current.appendChild(renderer.domElement);
 
-    // Position camera for front view with slight tilt
+    // Position camera
     camera.position.set(0, 2, 10);
     camera.lookAt(0, 0, 0);
 
@@ -47,15 +44,15 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     cameraRef.current = camera;
     rendererRef.current = renderer;
 
-    // Create main group for all pancakes
+    // Create main group
     const group = new THREE.Group();
     scene.add(group);
     groupRef.current = group;
 
-    // Ground plane with gradient material
+    // Ground plane
     const groundGeometry = new THREE.PlaneGeometry(20, 20);
     const groundMaterial = new THREE.MeshStandardMaterial({
-      color: 0x2a2a4e, // Lighter ground color
+      color: 0x2a2a4e,
       roughness: 0.6,
       metalness: 0.3
     });
@@ -65,57 +62,8 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     ground.receiveShadow = true;
     scene.add(ground);
 
-    // Create pancakes with rounded edges
-    arrangement.forEach((size, index) => {
-      // Create base shape
-      const shape = new THREE.Shape();
-      const width = size * 2;
-      const depth = 2;
-      const radius = 0.2; // Radius of rounded corners
-
-      // Draw rounded rectangle shape
-      shape.moveTo(-width/2 + radius, -depth/2);
-      shape.lineTo(width/2 - radius, -depth/2);
-      shape.quadraticCurveTo(width/2, -depth/2, width/2, -depth/2 + radius);
-      shape.lineTo(width/2, depth/2 - radius);
-      shape.quadraticCurveTo(width/2, depth/2, width/2 - radius, depth/2);
-      shape.lineTo(-width/2 + radius, depth/2);
-      shape.quadraticCurveTo(-width/2, depth/2, -width/2, depth/2 - radius);
-      shape.lineTo(-width/2, -depth/2 + radius);
-      shape.quadraticCurveTo(-width/2, -depth/2, -width/2 + radius, -depth/2);
-
-      // Extrude settings
-      const extrudeSettings = {
-        steps: 1,
-        depth: 0.4,
-        bevelEnabled: true,
-        bevelThickness: 0.1,
-        bevelSize: 0.1,
-        bevelOffset: 0,
-        bevelSegments: 5
-      };
-
-      // Create geometry with rounded edges
-      const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-
-      const material = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(`hsl(${size * 40}, 70%, 50%)`),
-        roughness: 0.4,
-        metalness: 0.1
-      });
-
-      const pancake = new THREE.Mesh(geometry, material);
-      pancake.position.y = index * 0.6;
-      pancake.castShadow = true;
-      pancake.receiveShadow = true;
-      // Rotate to face front
-      pancake.rotation.x = Math.PI / 2;
-      group.add(pancake);
-      pancakesRef.current.push(pancake);
-    });
-
-    // Update lighting
-    const mainLight = new THREE.DirectionalLight(0xffffff, 2); // Increased intensity
+    // Lighting
+    const mainLight = new THREE.DirectionalLight(0xffffff, 2);
     mainLight.position.set(5, 10, 5);
     mainLight.castShadow = true;
     mainLight.shadow.mapSize.width = 2048;
@@ -128,20 +76,16 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     mainLight.shadow.camera.bottom = -10;
     scene.add(mainLight);
 
-    // Ambient light for better overall illumination
-    const ambientLight = new THREE.AmbientLight(0x6666ff, 1.0); // Increased blue ambient light
+    const ambientLight = new THREE.AmbientLight(0x6666ff, 1.0);
     scene.add(ambientLight);
 
-    // Add rim light for better depth
-    const rimLight = new THREE.DirectionalLight(0x4444ff, 0.8); // Increased rim light
+    const rimLight = new THREE.DirectionalLight(0x4444ff, 0.8);
     rimLight.position.set(-5, 3, -5);
     scene.add(rimLight);
 
-    // Add a fill light from the front
     const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
     fillLight.position.set(0, 2, 8);
     scene.add(fillLight);
-
 
     // Animation loop
     function animate() {
@@ -168,6 +112,62 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
       containerRef.current?.removeChild(renderer.domElement);
     };
   }, []);
+
+  // Create or update pancakes when arrangement changes
+  useEffect(() => {
+    if (!groupRef.current || !sceneRef.current) return;
+
+    // Remove existing pancakes
+    pancakesRef.current.forEach(pancake => {
+      groupRef.current!.remove(pancake);
+      pancake.geometry.dispose();
+      (pancake.material as THREE.Material).dispose();
+    });
+    pancakesRef.current = [];
+
+    // Create new pancakes based on current arrangement
+    arrangement.forEach((size, index) => {
+      const shape = new THREE.Shape();
+      const width = size * 2;
+      const depth = 2;
+      const radius = 0.2;
+
+      shape.moveTo(-width/2 + radius, -depth/2);
+      shape.lineTo(width/2 - radius, -depth/2);
+      shape.quadraticCurveTo(width/2, -depth/2, width/2, -depth/2 + radius);
+      shape.lineTo(width/2, depth/2 - radius);
+      shape.quadraticCurveTo(width/2, depth/2, width/2 - radius, depth/2);
+      shape.lineTo(-width/2 + radius, depth/2);
+      shape.quadraticCurveTo(-width/2, depth/2, -width/2, depth/2 - radius);
+      shape.lineTo(-width/2, -depth/2 + radius);
+      shape.quadraticCurveTo(-width/2, -depth/2, -width/2 + radius, -depth/2);
+
+      const extrudeSettings = {
+        steps: 1,
+        depth: 0.4,
+        bevelEnabled: true,
+        bevelThickness: 0.1,
+        bevelSize: 0.1,
+        bevelOffset: 0,
+        bevelSegments: 5
+      };
+
+      const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+      const material = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(`hsl(${size * 40}, 70%, 50%)`),
+        roughness: 0.4,
+        metalness: 0.1
+      });
+
+      const pancake = new THREE.Mesh(geometry, material);
+      pancake.position.y = index * 0.6;
+      pancake.castShadow = true;
+      pancake.receiveShadow = true;
+      pancake.rotation.x = Math.PI / 2;
+      groupRef.current!.add(pancake);
+      pancakesRef.current.push(pancake);
+    });
+  }, [arrangement]);
 
   // Handle click events
   useEffect(() => {

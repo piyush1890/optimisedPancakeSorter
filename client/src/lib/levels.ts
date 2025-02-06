@@ -13,11 +13,23 @@ export const levels: Level[] = [
     target: [5, 4, 3, 2, 1],
     minMoves: 4
   },
-  // Add more levels as needed
+  {
+    id: 3,
+    arrangement: [1, 5, 2, 4, 3],
+    target: [5, 4, 3, 2, 1],
+    minMoves: 5
+  }
 ];
 
 export function calculateStars(moves: number, minMoves: number): number {
   if (moves <= minMoves) return 3;
   if (moves <= minMoves + 2) return 2;
   return 1;
+}
+
+export function isDescendingOrder(arr: number[]): boolean {
+  for (let i = 1; i < arr.length; i++) {
+    if (arr[i - 1] < arr[i]) return false;
+  }
+  return true;
 }

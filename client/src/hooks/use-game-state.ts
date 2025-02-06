@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { levels, calculateStars } from "@/lib/levels";
+import { levels, calculateStars, isDescendingOrder } from "@/lib/levels";
 import { useToast } from "@/hooks/use-toast";
 
 export function useGameState() {
@@ -9,7 +9,7 @@ export function useGameState() {
   const { toast } = useToast();
 
   const level = levels.find(l => l.id === currentLevel);
-  
+
   const flipStack = useCallback((index: number) => {
     setMoves(m => m + 1);
     setArrangement(arr => {
@@ -21,9 +21,8 @@ export function useGameState() {
   }, []);
 
   const checkWin = useCallback(() => {
-    if (!level) return false;
-    return arrangement.every((val, idx) => val === level.target[idx]);
-  }, [arrangement, level]);
+    return isDescendingOrder(arrangement);
+  }, [arrangement]);
 
   const nextLevel = useCallback(() => {
     const nextLevelData = levels[currentLevel];

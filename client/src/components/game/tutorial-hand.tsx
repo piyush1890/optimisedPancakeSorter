@@ -39,14 +39,14 @@ export const TutorialHand: FC<TutorialHandProps> = ({ onClick, positions }) => {
           fill="none" 
           className="drop-shadow-lg"
         >
-          {/* Hand base */}
+          {/* Hand base with folded fingers */}
           <path
             d="M12 22c-1.5 0-2.5-0.5-3.5-1.5S7 18.5 7 17V8c0-1.1 0.9-2 2-2s2 0.9 2 2v5h1V4c0-1.1 0.9-2 2-2s2 0.9 2 2v9h1V6c0-1.1 0.9-2 2-2s2 0.9 2 2v7"
             fill="#FFB800"
             stroke="#CC9200"
             strokeWidth="0.5"
           />
-          {/* Pointing finger */}
+          {/* Extended index finger */}
           <path
             d="M14 13V4c0-1.1 0.9-2 2-2s2 0.9 2 2v9"
             fill="#FFB800"

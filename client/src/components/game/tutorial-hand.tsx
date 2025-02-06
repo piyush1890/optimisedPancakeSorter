@@ -8,6 +8,12 @@ interface TutorialHandProps {
 }
 
 export const TutorialHand: FC<TutorialHandProps> = ({ onClick, positions }) => {
+  // Create animation sequence based on positions
+  const sequence = {
+    x: positions.map(p => p.x),
+    y: positions.map(p => p.y),
+  };
+
   return (
     <motion.div
       className="fixed pointer-events-none z-50"
@@ -15,14 +21,13 @@ export const TutorialHand: FC<TutorialHandProps> = ({ onClick, positions }) => {
       animate={{
         scale: 1,
         opacity: 1,
-        x: positions.map(p => p.x),
-        y: positions.map(p => p.y)
+        ...sequence
       }}
       transition={{
         duration: 2,
         repeat: 2,
         repeatType: "reverse",
-        times: positions.map((_, i) => i / (positions.length - 1)),
+        times: positions.map((_, i) => i / (positions.length - 1 || 1)),
         ease: "easeInOut"
       }}
       onAnimationComplete={onClick}

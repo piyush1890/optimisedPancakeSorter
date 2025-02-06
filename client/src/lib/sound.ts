@@ -3,7 +3,6 @@ export class SoundEffect {
   private audioContext: AudioContext | null = null;
   private gainNode: GainNode | null = null;
   private enabled: boolean = true;
-  private victoryBuffer: AudioBuffer | null = null;
 
   private initializeAudioContext() {
     if (!this.audioContext) {
@@ -11,7 +10,7 @@ export class SoundEffect {
         this.audioContext = new AudioContext();
         this.gainNode = this.audioContext.createGain();
         this.gainNode.connect(this.audioContext.destination);
-        this.gainNode.gain.value = 0.5; // Increased volume to 50%
+        this.gainNode.gain.value = 0.5;
         console.log('Audio context initialized successfully');
       } catch (error) {
         console.warn('Web Audio API not supported:', error);
@@ -53,43 +52,98 @@ export class SoundEffect {
 
     console.log('Playing victory sound');
 
-    // Simple oscillator-based "ahh yeeh" sound
     const now = this.audioContext!.currentTime;
+    const duration = 2.0; // Total duration in seconds
 
-    // Create oscillators for the vocal-like sound
-    const osc1 = this.audioContext!.createOscillator();
-    const osc2 = this.audioContext!.createOscillator();
-    const gainNode = this.audioContext!.createGain();
+    // Create a compressor for better sound
+    const compressor = this.audioContext!.createDynamicsCompressor();
+    compressor.connect(this.gainNode!);
 
-    osc1.connect(gainNode);
-    osc2.connect(gainNode);
-    gainNode.connect(this.gainNode!);
+    // Bass drum
+    this.createKick(now, compressor);
+    this.createKick(now + 0.5, compressor);
+    this.createKick(now + 1.0, compressor);
+    this.createKick(now + 1.5, compressor);
 
-    // Configure oscillators for a vocal-like sound
-    osc1.type = 'sine';
-    osc2.type = 'triangle';
+    // Bass line
+    this.createBassLine(now, duration, compressor);
 
-    // "Ahh" part
-    osc1.frequency.setValueAtTime(440, now); // A4
-    osc2.frequency.setValueAtTime(444, now); // Slightly detuned for chorus effect
-
-    // "Yeeh" part
-    osc1.frequency.setValueAtTime(523.25, now + 0.3); // C5
-    osc2.frequency.setValueAtTime(527.25, now + 0.3);
-
-    // Envelope
-    gainNode.gain.setValueAtTime(0, now);
-    gainNode.gain.linearRampToValueAtTime(0.5, now + 0.1);
-    gainNode.gain.setValueAtTime(0.5, now + 0.3);
-    gainNode.gain.linearRampToValueAtTime(0, now + 0.6);
-
-    osc1.start(now);
-    osc2.start(now);
-
-    osc1.stop(now + 0.6);
-    osc2.stop(now + 0.6);
+    // Lead synth
+    this.createLeadSynth(now, duration, compressor);
 
     console.log('Victory sound started');
+  }
+
+  private createKick(startTime: number, destination: AudioNode) {
+    const osc = this.audioContext!.createOscillator();
+    const gainNode = this.audioContext!.createGain();
+
+    osc.connect(gainNode);
+    gainNode.connect(destination);
+
+    osc.frequency.setValueAtTime(150, startTime);
+    osc.frequency.exponentialRampToValueAtTime(0.01, startTime + 0.2);
+
+    gainNode.gain.setValueAtTime(1, startTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.2);
+
+    osc.start(startTime);
+    osc.stop(startTime + 0.2);
+  }
+
+  private createBassLine(startTime: number, duration: number, destination: AudioNode) {
+    const osc = this.audioContext!.createOscillator();
+    const gainNode = this.audioContext!.createGain();
+    const filter = this.audioContext!.createBiquadFilter();
+
+    osc.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(destination);
+
+    // Bass line settings
+    osc.type = 'sawtooth';
+    filter.type = 'lowpass';
+    filter.frequency.value = 500;
+    filter.Q.value = 10;
+
+    // Bass pattern
+    const bassNotes = [60, 62, 64, 65]; // Bass note frequencies
+    const noteTime = duration / bassNotes.length;
+
+    bassNotes.forEach((note, i) => {
+      const noteStart = startTime + (i * noteTime);
+      osc.frequency.setValueAtTime(220 * Math.pow(2, (note - 69) / 12), noteStart);
+      gainNode.gain.setValueAtTime(0.5, noteStart);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, noteStart + noteTime * 0.9);
+    });
+
+    osc.start(startTime);
+    osc.stop(startTime + duration);
+  }
+
+  private createLeadSynth(startTime: number, duration: number, destination: AudioNode) {
+    const osc = this.audioContext!.createOscillator();
+    const gainNode = this.audioContext!.createGain();
+
+    osc.connect(gainNode);
+    gainNode.connect(destination);
+
+    // Lead synth settings
+    osc.type = 'square';
+
+    // Lead pattern
+    const leadNotes = [72, 74, 76, 77]; // Lead note frequencies
+    const noteTime = duration / leadNotes.length;
+
+    leadNotes.forEach((note, i) => {
+      const noteStart = startTime + (i * noteTime);
+      osc.frequency.setValueAtTime(440 * Math.pow(2, (note - 69) / 12), noteStart);
+      gainNode.gain.setValueAtTime(0.2, noteStart);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, noteStart + noteTime * 0.8);
+    });
+
+    osc.start(startTime);
+    osc.stop(startTime + duration);
   }
 }
 

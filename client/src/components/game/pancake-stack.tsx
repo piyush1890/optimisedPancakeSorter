@@ -70,14 +70,14 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
         size * 2, // width
         0.5, // height
         2, // depth
-        8, // widthSegments - increased for rounder edges
-        4, // heightSegments - increased for smoother corners
-        8  // depthSegments - increased for rounder edges
+        16, // widthSegments - significantly increased for rounder edges
+        8, // heightSegments - increased for smoother corners
+        16  // depthSegments - significantly increased for rounder edges
       );
       const material = new THREE.MeshStandardMaterial({
         color: new THREE.Color(`hsl(${size * 40}, 70%, 50%)`),
-        roughness: 0.7,
-        metalness: 0.3
+        roughness: 0.5, // Reduced for smoother appearance
+        metalness: 0.2  // Reduced for less harsh edges
       });
 
       const pancake = new THREE.Mesh(geometry, material);

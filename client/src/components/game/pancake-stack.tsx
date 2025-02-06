@@ -211,22 +211,44 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating,
       });
 
       pancakesRef.current.forEach((pancake, i) => {
-        // Bounce and spin animation
+        // Random values for more varied animation
+        const randomY = 1 + Math.random() * 1.5;
+        const randomX = (Math.random() - 0.5) * 2;
+        const randomZ = (Math.random() - 0.5) * 2;
+        const randomRotation = Math.PI * (2 + Math.random() * 2);
+        const randomDelay = i * 0.1 + Math.random() * 0.2;
+
+        // Bounce animation with random horizontal movement
         tl.to(pancake.position, {
-          y: `+=${1 + Math.sin(i) * 0.5}`,
-          duration: 0.3,
+          y: `+=${randomY}`,
+          x: `+=${randomX}`,
+          z: `+=${randomZ}`,
+          duration: 0.5,
           ease: "power2.out",
           yoyo: true,
-          repeat: 1
-        }, i * 0.1);
+          repeat: 3
+        }, randomDelay);
 
-        // Rotation animation
+        // Add wobble effect
         tl.to(pancake.rotation, {
-          z: Math.PI * 2,
-          duration: 0.6,
-          ease: "power1.inOut"
-        }, i * 0.1);
+          x: pancake.rotation.x + (Math.random() - 0.5) * 0.5,
+          z: randomRotation,
+          duration: 1,
+          ease: "elastic.out(1, 0.3)",
+          yoyo: true,
+          repeat: 1
+        }, randomDelay);
       });
+
+      // Add a final group bounce
+      tl.to(pancakesRef.current.map(p => p.position), {
+        y: "+=0.5",
+        duration: 0.3,
+        stagger: 0.05,
+        ease: "power2.out",
+        yoyo: true,
+        repeat: 1
+      }, "+=0.5");
     }
   }, [isVictory, isAnimating, setIsAnimating]);
 

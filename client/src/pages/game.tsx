@@ -47,19 +47,19 @@ export default function Game() {
     if (currentLevel === 1) {
       setTutorialPositions([
         { 
-          x: centerX + 150,  // Position to the right of the stack
-          y: centerY + 50   // Point at the middle pancake
+          x: centerX - 200,  // Position to the left of the stack
+          y: centerY + 100   // Point at the middle pancake
         }
       ]);
     } else if (currentLevel === 2) {
       setTutorialPositions([
         { 
-          x: centerX + 150,
-          y: centerY - 50  // Point at top pancake first
+          x: centerX - 200,
+          y: centerY - 100  // Point at top pancake first
         },
         { 
-          x: centerX + 150,
-          y: centerY + 150  // Then point at bottom pancake
+          x: centerX - 200,
+          y: centerY + 200  // Then point at bottom pancake
         }
       ]);
     }

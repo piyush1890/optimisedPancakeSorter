@@ -16,10 +16,8 @@ export const TutorialHand: FC<TutorialHandProps> = ({ onClick, positions }) => {
   return (
     <motion.div
       className="fixed pointer-events-none z-[100]"
-      initial={{ scale: 1, opacity: 1 }}
+      initial={{ scale: 1 }}
       animate={{
-        scale: 1,
-        opacity: 1,
         ...sequence
       }}
       transition={{
@@ -36,22 +34,23 @@ export const TutorialHand: FC<TutorialHandProps> = ({ onClick, positions }) => {
           width="96" 
           height="96" 
           viewBox="0 0 24 24" 
-          fill="none" 
+          fill="none"
+          style={{ transform: 'rotate(-45deg)' }}
           className="drop-shadow-lg"
         >
-          {/* Hand base with folded fingers */}
+          {/* Main palm and folded fingers */}
           <path
-            d="M12 22c-1.5 0-2.5-0.5-3.5-1.5S7 18.5 7 17V8c0-1.1 0.9-2 2-2s2 0.9 2 2v5h1V4c0-1.1 0.9-2 2-2s2 0.9 2 2v9h1V6c0-1.1 0.9-2 2-2s2 0.9 2 2v7"
-            fill="#FFB800"
-            stroke="#CC9200"
-            strokeWidth="0.5"
+            d="M9 14c0-2 0-6 0-8s1-4 3-4 3 2 3 4v4c1-2 1-6 3-6s3 2 3 4v10c0 4-3 6-7 6s-7-2-7-6V8"
+            fill="#FFFFFF"
+            stroke="#000000"
+            strokeWidth="0.75"
           />
           {/* Extended index finger */}
           <path
-            d="M14 13V4c0-1.1 0.9-2 2-2s2 0.9 2 2v9"
-            fill="#FFB800"
-            stroke="#CC9200"
-            strokeWidth="0.5"
+            d="M12 14V4c0-2 1-4 3-4s3 2 3 4v10"
+            fill="#FFFFFF"
+            stroke="#000000"
+            strokeWidth="0.75"
           />
         </svg>
       </div>

@@ -198,7 +198,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     const liftHeight = 2;
 
     const flipGroup = new THREE.Group();
-    const pancakesToFlip = pancakesRef.current.slice(index);
+    const pancakesToFlip = pancakesRef.current.slice(0, index + 1);
 
     const pivotY = (index + pancakesToFlip.length) / 2 * stackHeight;
     flipGroup.position.y = pivotY;
@@ -232,17 +232,23 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
       }
     });
 
-    gsap.to(flipGroup.rotation, {
+    tl.to(flipGroup.rotation, {
       x: Math.PI,
       duration: 0.7,
-      ease: "power1.inOut",
-      onUpdate: function() {
-        const progress = this.progress();
-        // Create a natural arc motion by combining rotation and height
-        //This was the issue, the y position was not being updated correctly.  The edited code fixes this
-        flipGroup.position.y = pivotY + Math.sin(progress * Math.PI) * liftHeight * (progress <= 0.5 ? 1 : -1);
-      }
+      ease: "power1.inOut"
     });
+
+    tl.to(flipGroup.position, {
+      y: `+=${liftHeight}`,
+      duration: 0.35,
+      ease: "power2.out"
+    }, 0);
+
+    tl.to(flipGroup.position, {
+      y: pivotY,
+      duration: 0.35,
+      ease: "power2.in"
+    }, 0.35);
   };
 
   return <div ref={containerRef} className="w-full h-screen" />;

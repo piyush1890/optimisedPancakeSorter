@@ -232,20 +232,22 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
       }
     });
 
+    // Create a single fluid motion where rotation happens during movement
     tl.to(flipGroup.position, {
       y: pivotY + liftHeight,
-      duration: 0.3,
-      ease: "power2.out"
-    })
-      .to(flipGroup.rotation, {
-        x: Math.PI,
-        duration: 0.6,
-        ease: "power2.inOut"
-      })
-      .to(flipGroup.position, {
-        y: pivotY,
-        duration: 0.3
-      });
+      duration: 0.5,
+      ease: "power2.inOut"
+    }, 0) // Start at 0
+    .to(flipGroup.rotation, {
+      x: Math.PI,
+      duration: 0.8,
+      ease: "power2.inOut"
+    }, 0.1) // Start slightly after the lift begins
+    .to(flipGroup.position, {
+      y: pivotY,
+      duration: 0.5,
+      ease: "power2.inOut"
+    }, 0.3); // Start dropping before flip completes
   };
 
   return <div ref={containerRef} className="w-full h-screen" />;

@@ -48,7 +48,7 @@ export default function Game() {
       setTutorialPositions([
         { 
           x: centerX,
-          y: centerY + 50 
+          y: centerY + 100  // Adjusted position for better visibility
         }
       ]);
     } else if (currentLevel === 2) {
@@ -68,19 +68,24 @@ export default function Game() {
   useEffect(() => {
     if ((currentLevel === 1 && !tutorialState.level1Completed) ||
         (currentLevel === 2 && !tutorialState.level2Completed)) {
-      setShowTutorial(true);
-      calculateTutorialPositions();
+      // Add delay before showing tutorial to ensure game is ready
+      const timer = setTimeout(() => {
+        setShowTutorial(true);
+        calculateTutorialPositions();
+      }, 1000);
+
+      return () => clearTimeout(timer);
     } else {
       setShowTutorial(false);
     }
   }, [currentLevel, tutorialState, calculateTutorialPositions]);
 
-  const handleTutorialComplete = () => {
-    setShowTutorial(false);
+  const handleTutorialComplete = useCallback(() => {
     if (currentLevel === 1 || currentLevel === 2) {
       completeTutorial(currentLevel as 1 | 2);
     }
-  };
+    setShowTutorial(false);
+  }, [currentLevel, completeTutorial]);
 
   useEffect(() => {
     if (params?.id) {

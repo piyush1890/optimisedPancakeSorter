@@ -28,9 +28,13 @@ export const TutorialHand: FC<TutorialHandProps> = ({ onClick, positions }) => {
         repeat: 2,
         repeatType: "reverse",
         times: positions.map((_, i) => i / (positions.length - 1 || 1)),
-        ease: "easeInOut"
+        ease: "easeInOut",
+        repeatDelay: 0.5
       }}
-      onAnimationComplete={onClick}
+      onAnimationComplete={() => {
+        // Add delay before completing tutorial
+        setTimeout(onClick, 1000);
+      }}
     >
       <div className="relative">
         <Hand 

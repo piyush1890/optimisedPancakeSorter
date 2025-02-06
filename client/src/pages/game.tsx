@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useGameState } from "@/hooks/use-game-state";
 import { useTutorialState } from "@/hooks/use-tutorial-state";
 import { PancakeStack } from "@/components/game/pancake-stack";
 import { LevelComplete } from "@/components/game/level-complete";
-import { TutorialHand } from "@/components/game/tutorial-hand";
+import { TutorialVideo } from "@/components/game/tutorial-video";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Volume2, VolumeX, Star, ChevronLeft } from "lucide-react";
@@ -16,11 +16,9 @@ export default function Game() {
   const [showComplete, setShowComplete] = useState(false);
   const [isVictory, setIsVictory] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const [showTutorial, setShowTutorial] = useState(false);
-  const [tutorialPositions, setTutorialPositions] = useState<{ x: number; y: number }[]>([]);
   const [, params] = useRoute("/game/:id");
   const [, navigate] = useLocation();
-  const { tutorialState, completeTutorial } = useTutorialState();
+  const { tutorialState } = useTutorialState();
 
   const { 
     currentLevel, 
@@ -34,57 +32,6 @@ export default function Game() {
     stars, 
     totalStars 
   } = useGameState();
-
-  const calculateTutorialPositions = useCallback(() => {
-    if (!currentLevel) return;
-
-    const windowHeight = window.innerHeight;
-    const windowWidth = window.innerWidth;
-
-    const centerX = windowWidth / 2;
-    const centerY = windowHeight / 2;
-
-    if (currentLevel === 1) {
-      setTutorialPositions([
-        { 
-          x: centerX - 200,  // Position to the left of the stack
-          y: centerY + 100   // Point at the middle pancake
-        }
-      ]);
-    } else if (currentLevel === 2) {
-      setTutorialPositions([
-        { 
-          x: centerX - 200,
-          y: centerY - 100  // Point at top pancake first
-        },
-        { 
-          x: centerX - 200,
-          y: centerY + 200  // Then point at bottom pancake
-        }
-      ]);
-    }
-  }, [currentLevel]);
-
-  useEffect(() => {
-    if ((currentLevel === 1 && !tutorialState.level1Completed) ||
-        (currentLevel === 2 && !tutorialState.level2Completed)) {
-      const timer = setTimeout(() => {
-        setShowTutorial(true);
-        calculateTutorialPositions();
-      }, 1000);
-
-      return () => clearTimeout(timer);
-    } else {
-      setShowTutorial(false);
-    }
-  }, [currentLevel, tutorialState, calculateTutorialPositions]);
-
-  const handleTutorialComplete = useCallback(() => {
-    if (currentLevel === 1 || currentLevel === 2) {
-      completeTutorial(currentLevel as 1 | 2);
-    }
-    setShowTutorial(false);
-  }, [currentLevel, completeTutorial]);
 
   useEffect(() => {
     if (params?.id) {
@@ -125,16 +72,13 @@ export default function Game() {
     navigate(`/game/${currentLevel + 1}`);
   };
 
+  // Show tutorial video for levels 1 and 2 if not completed
+  const showTutorial = (currentLevel === 1 && !tutorialState.level1Completed) || 
+                      (currentLevel === 2 && !tutorialState.level2Completed);
+
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-blue-600 via-primary/40 to-indigo-400">
-      {showTutorial && tutorialPositions.length > 0 && (
-        <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 9999 }}>
-          <TutorialHand
-            positions={tutorialPositions}
-            onClick={handleTutorialComplete}
-          />
-        </div>
-      )}
+      {showTutorial && <TutorialVideo level={currentLevel} />}
 
       <div className="fixed top-0 left-0 right-0 p-4 z-10 bg-gradient-to-b from-black/20 to-transparent">
         <div className="container max-w-lg mx-auto">

@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { type FC } from "react";
-import { MousePointer } from "lucide-react";
 
 interface TutorialHandProps {
   onClick: () => void;
@@ -33,10 +32,32 @@ export const TutorialHand: FC<TutorialHandProps> = ({ onClick, positions }) => {
       }}
     >
       <div className="relative cursor-pointer" onClick={onClick} style={{ pointerEvents: 'auto' }}>
-        <MousePointer 
-          className="w-24 h-24 text-yellow-400 drop-shadow-lg transform -rotate-45" 
-          strokeWidth={1.5}
-        />
+        <svg 
+          width="96" 
+          height="96" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          className="drop-shadow-lg"
+        >
+          <path
+            d="M12 1C12 1 12.5 2 12.5 4C12.5 6 12 7 12 7C12 7 11.5 6 11.5 4C11.5 2 12 1 12 1Z"
+            fill="#FFB800"
+            stroke="#CC9200"
+            strokeWidth="0.5"
+          />
+          <path
+            d="M12 7C12 7 13 8 13 11C13 14 12 16 12 16C12 16 11 14 11 11C11 8 12 7 12 7Z"
+            fill="#FFB800"
+            stroke="#CC9200"
+            strokeWidth="0.5"
+          />
+          <path
+            d="M12 16C12 16 13 17 13 19C13 21 12 22 12 22C12 22 11 21 11 19C11 17 12 16 12 16Z"
+            fill="#FFB800"
+            stroke="#CC9200"
+            strokeWidth="0.5"
+          />
+        </svg>
         <motion.div
           className="absolute inset-0 bg-white/20 rounded-full blur-xl"
           animate={{

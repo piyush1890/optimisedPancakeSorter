@@ -47,19 +47,19 @@ export default function Game() {
     if (currentLevel === 1) {
       setTutorialPositions([
         { 
-          x: centerX - 100, 
-          y: centerY  // Point directly at a mid-height pancake
+          x: centerX - 50, 
+          y: centerY - 100  // Position above the pancake to point down at it
         }
       ]);
     } else if (currentLevel === 2) {
       setTutorialPositions([
         { 
-          x: centerX - 100,
-          y: centerY - 50 
+          x: centerX - 50,
+          y: centerY - 150 
         },
         { 
-          x: centerX - 100,
-          y: centerY + 100 
+          x: centerX - 50,
+          y: centerY + 50 
         }
       ]);
     }
@@ -194,5 +194,4 @@ export default function Game() {
       />
     </div>
   );
-
 }

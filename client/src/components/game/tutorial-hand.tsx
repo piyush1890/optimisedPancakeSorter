@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { MousePointer } from "lucide-react";
 import { type FC } from "react";
+import { Hand } from "lucide-react";
 
 interface TutorialHandProps {
   onClick: () => void;
@@ -33,16 +33,20 @@ export const TutorialHand: FC<TutorialHandProps> = ({ onClick, positions }) => {
       onAnimationComplete={onClick}
     >
       <div className="relative">
-        <MousePointer className="w-16 h-16 text-white drop-shadow-lg" />
+        <Hand 
+          className="w-24 h-24 text-white drop-shadow-lg transform -rotate-45" 
+          strokeWidth={1.5}
+        />
         <motion.div
-          className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full"
+          className="absolute inset-0 bg-white/20 rounded-full blur-xl"
           animate={{
             scale: [1, 1.5, 1],
+            opacity: [0.5, 0.8, 0.5],
           }}
           transition={{
-            duration: 0.5,
+            duration: 1,
             repeat: Infinity,
-            repeatDelay: 1
+            repeatType: "reverse"
           }}
         />
       </div>

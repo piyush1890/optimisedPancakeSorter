@@ -148,7 +148,7 @@ export default function Game() {
                 variant="outline"
                 size="sm"
                 className="text-white bg-white/10 hover:bg-white/20 border-white/20"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/levels")}
               >
                 <ChevronLeft className="h-4 w-4 mr-1" />
                 Levels

@@ -9,8 +9,12 @@ import LevelSelect from "@/pages/level-select";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={LevelSelect} />
+      <Route path="/" component={() => {
+        window.location.href = '/game/1';
+        return null;
+      }} />
       <Route path="/game/:id" component={Game} />
+      <Route path="/levels" component={LevelSelect} />
       <Route component={NotFound} />
     </Switch>
   );

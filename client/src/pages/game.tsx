@@ -35,66 +35,46 @@ export default function Game() {
     totalStars 
   } = useGameState();
 
-  // Calculate tutorial hand positions based on level
   const calculateTutorialPositions = useCallback(() => {
     if (!currentLevel) return;
 
-    console.log('Calculating tutorial positions for level:', currentLevel);
-
-    // Use window dimensions for better positioning
     const windowHeight = window.innerHeight;
     const windowWidth = window.innerWidth;
 
-    // Calculate center position
     const centerX = windowWidth / 2;
     const centerY = windowHeight / 2;
 
     if (currentLevel === 1) {
-      // For level 1, show a simple flip at position 2
-      console.log('Setting level 1 tutorial position');
       setTutorialPositions([
         { 
           x: centerX,
-          y: centerY + 50 // Offset down slightly to point at pancakes
+          y: centerY + 50 
         }
       ]);
     } else if (currentLevel === 2) {
-      // For level 2, show a sequence of two flips
-      console.log('Setting level 2 tutorial position');
       setTutorialPositions([
         { 
           x: centerX,
-          y: centerY - 50 // First flip position
+          y: centerY - 50 
         },
         { 
           x: centerX,
-          y: centerY + 100 // Second flip position
+          y: centerY + 100 
         }
       ]);
     }
   }, [currentLevel]);
 
-  // Show tutorial for levels 1 and 2 if not completed
   useEffect(() => {
-    console.log('Tutorial state check:', {
-      currentLevel,
-      tutorialState,
-      showTutorial,
-      positions: tutorialPositions
-    });
-
     if ((currentLevel === 1 && !tutorialState.level1Completed) ||
         (currentLevel === 2 && !tutorialState.level2Completed)) {
-      console.log('Showing tutorial for level:', currentLevel);
       setShowTutorial(true);
       calculateTutorialPositions();
     } else {
-      console.log('Hiding tutorial');
       setShowTutorial(false);
     }
   }, [currentLevel, tutorialState, calculateTutorialPositions]);
 
-  // Handle tutorial completion
   const handleTutorialComplete = () => {
     setShowTutorial(false);
     if (currentLevel === 1 || currentLevel === 2) {
@@ -102,7 +82,6 @@ export default function Game() {
     }
   };
 
-  // Set the level from URL parameter
   useEffect(() => {
     if (params?.id) {
       const levelId = parseInt(params.id);
@@ -110,19 +89,16 @@ export default function Game() {
     }
   }, [params?.id, goToLevel]);
 
-  // Reset animation states when level changes
   useEffect(() => {
     setIsAnimating(false);
     setIsVictory(false);
     setShowComplete(false);
   }, [currentLevel]);
 
-  // Update sound effect state when toggle changes
   useEffect(() => {
     soundEffect.setEnabled(soundEnabled);
   }, [soundEnabled]);
 
-  // Check win condition whenever arrangement changes and animation is complete
   useEffect(() => {
     const checkWinCondition = () => {
       if (checkWin() && !isAnimating && !showComplete && !isVictory) {
@@ -141,19 +117,21 @@ export default function Game() {
   const handleLevelComplete = () => {
     setShowComplete(false);
     setIsVictory(false);
-    const nextLevelNumber = currentLevel + 1;
     nextLevel();
-    navigate(`/game/${nextLevelNumber}`);
+    navigate(`/game/${currentLevel + 1}`);
   };
 
-  console.log('Tutorial render check:', {
-    showTutorial,
-    hasTutorialPositions: tutorialPositions.length > 0
-  });
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-primary/40 to-indigo-400">
-      {/* HUD */}
+    <div className="relative min-h-screen bg-gradient-to-br from-blue-600 via-primary/40 to-indigo-400">
+      {showTutorial && tutorialPositions.length > 0 && (
+        <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 9999 }}>
+          <TutorialHand
+            positions={tutorialPositions}
+            onClick={handleTutorialComplete}
+          />
+        </div>
+      )}
+
       <div className="fixed top-0 left-0 right-0 p-4 z-10 bg-gradient-to-b from-black/20 to-transparent">
         <div className="container max-w-lg mx-auto">
           <div className="flex justify-between items-center mb-2">
@@ -193,7 +171,6 @@ export default function Game() {
         </div>
       </div>
 
-      {/* Game Area */}
       <div className="game-area">
         <PancakeStack
           arrangement={arrangement}
@@ -202,17 +179,8 @@ export default function Game() {
           setIsAnimating={setIsAnimating}
           isVictory={isVictory}
         />
-
-        {/* Tutorial Hand - Moved inside game-area for better positioning */}
-        {showTutorial && tutorialPositions.length > 0 && (
-          <TutorialHand
-            positions={tutorialPositions}
-            onClick={handleTutorialComplete}
-          />
-        )}
       </div>
 
-      {/* Level Complete Dialog */}
       <LevelComplete
         isOpen={showComplete}
         onClose={handleLevelComplete}

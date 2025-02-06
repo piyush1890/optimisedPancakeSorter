@@ -13,22 +13,22 @@ interface LevelCompleteProps {
 export function LevelComplete({ isOpen, onClose, stars, moves, level }: LevelCompleteProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-background/60 backdrop-blur-md border-none">
         <DialogHeader>
-          <DialogTitle className="text-center text-2xl font-bold">
+          <DialogTitle className="text-center text-2xl font-bold text-white">
             Level {level} Complete!
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="py-8">
           <StarReward count={stars} />
-          <p className="text-center mt-4 text-muted-foreground">
+          <p className="text-center mt-4 text-white/90">
             Completed in {moves} moves
           </p>
         </div>
 
         <div className="flex justify-center">
-          <Button onClick={onClose} size="lg">
+          <Button onClick={onClose} size="lg" className="bg-white/20 hover:bg-white/30 text-white">
             Next Level
           </Button>
         </div>

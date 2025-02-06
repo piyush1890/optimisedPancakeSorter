@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { gsap } from "gsap";
+import { soundEffect } from "@/lib/sound";
 
 interface PancakeStackProps {
   arrangement: number[];
@@ -186,6 +187,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
       const intersects = raycaster.intersectObjects(pancakesRef.current);
 
       if (intersects.length > 0) {
+        soundEffect.playClick();
         const clickedIndex = pancakesRef.current.indexOf(intersects[0].object as THREE.Mesh);
         flipPancakes(clickedIndex);
       }

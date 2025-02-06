@@ -5,16 +5,14 @@ export class SoundEffect {
   private enabled: boolean = true;
   private victoryBuffer: AudioBuffer | null = null;
 
-  // Base64 encoded "ahh yeeh" audio clip
-  private readonly victorySound = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAASAAAeMwAUFBQUFCIiIiIiIjAwMDAwMD4+Pj4+PkxMTExMTFpaWlpaWmhoaGhoaHZ2dnZ2doSEhISEhJKSkpKSkqCgoKCgoK6urq6urrKysrKysr6+vr6+vsbGxsbGxtDQ0NDQ0N7e3t7e3ubm5ubm5vT09PT09P////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAQBAAAAAAAAHjOZTf9/AAAAAAAAAAAAAAAAAAAAAP/7kGQAAAIePXJ3Q2AANqPOAe5oAAQ8fchd7YAIw486h72wABBwchEGhJkGKEJFyDFCRDxcg4UJEXIOFCRDxQkRcQ8XIOFCRDxcg4UJEXIOFCQAAAAAMcLgICAgICAgICAg8PDw8PDw8PDw8PDw8PDw+CAgICAgICAgICAgIP///wAAAAAAAAAAAAHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwf/7kmRAj/AAAGkAAAAIAAANIAAAAQAAAaQAAAAgAAA0gAAABBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQZOuP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
-
   private initializeAudioContext() {
     if (!this.audioContext) {
       try {
         this.audioContext = new AudioContext();
         this.gainNode = this.audioContext.createGain();
         this.gainNode.connect(this.audioContext.destination);
-        this.gainNode.gain.value = 0.3; // Set volume to 30%
+        this.gainNode.gain.value = 0.5; // Increased volume to 50%
+        console.log('Audio context initialized successfully');
       } catch (error) {
         console.warn('Web Audio API not supported:', error);
       }
@@ -22,28 +20,9 @@ export class SoundEffect {
     return this.audioContext && this.gainNode;
   }
 
-  private async loadVictorySound() {
-    if (!this.audioContext || this.victoryBuffer) return;
-
-    try {
-      // Convert base64 to array buffer
-      const base64 = this.victorySound.split(',')[1];
-      const binaryString = window.atob(base64);
-      const len = binaryString.length;
-      const bytes = new Uint8Array(len);
-      for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-
-      // Decode audio data
-      this.victoryBuffer = await this.audioContext.decodeAudioData(bytes.buffer);
-    } catch (error) {
-      console.warn('Failed to load victory sound:', error);
-    }
-  }
-
   setEnabled(enabled: boolean) {
     this.enabled = enabled;
+    console.log('Sound enabled:', enabled);
   }
 
   playClick() {
@@ -62,15 +41,55 @@ export class SoundEffect {
   }
 
   async playVictory() {
-    if (!this.enabled || !this.initializeAudioContext()) return;
+    if (!this.enabled) {
+      console.log('Sound is disabled, skipping victory sound');
+      return;
+    }
 
-    await this.loadVictorySound();
-    if (!this.victoryBuffer) return;
+    if (!this.initializeAudioContext()) {
+      console.warn('Failed to initialize audio context');
+      return;
+    }
 
-    const source = this.audioContext!.createBufferSource();
-    source.buffer = this.victoryBuffer;
-    source.connect(this.gainNode!);
-    source.start();
+    console.log('Playing victory sound');
+
+    // Simple oscillator-based "ahh yeeh" sound
+    const now = this.audioContext!.currentTime;
+
+    // Create oscillators for the vocal-like sound
+    const osc1 = this.audioContext!.createOscillator();
+    const osc2 = this.audioContext!.createOscillator();
+    const gainNode = this.audioContext!.createGain();
+
+    osc1.connect(gainNode);
+    osc2.connect(gainNode);
+    gainNode.connect(this.gainNode!);
+
+    // Configure oscillators for a vocal-like sound
+    osc1.type = 'sine';
+    osc2.type = 'triangle';
+
+    // "Ahh" part
+    osc1.frequency.setValueAtTime(440, now); // A4
+    osc2.frequency.setValueAtTime(444, now); // Slightly detuned for chorus effect
+
+    // "Yeeh" part
+    osc1.frequency.setValueAtTime(523.25, now + 0.3); // C5
+    osc2.frequency.setValueAtTime(527.25, now + 0.3);
+
+    // Envelope
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(0.5, now + 0.1);
+    gainNode.gain.setValueAtTime(0.5, now + 0.3);
+    gainNode.gain.linearRampToValueAtTime(0, now + 0.6);
+
+    osc1.start(now);
+    osc2.start(now);
+
+    osc1.stop(now + 0.6);
+    osc2.stop(now + 0.6);
+
+    console.log('Victory sound started');
   }
 }
 

@@ -39,7 +39,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     containerRef.current.appendChild(renderer.domElement);
 
     // Position camera for front view with slight tilt
-    camera.position.set(0, 2, 10); // Mostly front (z), slight elevation (y)
+    camera.position.set(0, 2, 10);
     camera.lookAt(0, 0, 0);
 
     sceneRef.current = scene;
@@ -64,30 +64,51 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     ground.receiveShadow = true;
     scene.add(ground);
 
-    // Create pancakes
+    // Create pancakes with rounded edges
     arrangement.forEach((size, index) => {
-      const geometry = new THREE.BoxGeometry(
-        size * 2, // width
-        0.4, // height (slightly thinner)
-        2, // depth
-        12, // widthSegments
-        6,  // heightSegments
-        12  // depthSegments
-      );
+      // Create base shape
+      const shape = new THREE.Shape();
+      const width = size * 2;
+      const depth = 2;
+      const radius = 0.2; // Radius of rounded corners
 
-      // Smooth out the geometry by computing vertex normals
-      geometry.computeVertexNormals();
+      // Draw rounded rectangle shape
+      shape.moveTo(-width/2 + radius, -depth/2);
+      shape.lineTo(width/2 - radius, -depth/2);
+      shape.quadraticCurveTo(width/2, -depth/2, width/2, -depth/2 + radius);
+      shape.lineTo(width/2, depth/2 - radius);
+      shape.quadraticCurveTo(width/2, depth/2, width/2 - radius, depth/2);
+      shape.lineTo(-width/2 + radius, depth/2);
+      shape.quadraticCurveTo(-width/2, depth/2, -width/2, depth/2 - radius);
+      shape.lineTo(-width/2, -depth/2 + radius);
+      shape.quadraticCurveTo(-width/2, -depth/2, -width/2 + radius, -depth/2);
+
+      // Extrude settings
+      const extrudeSettings = {
+        steps: 1,
+        depth: 0.4,
+        bevelEnabled: true,
+        bevelThickness: 0.1,
+        bevelSize: 0.1,
+        bevelOffset: 0,
+        bevelSegments: 5
+      };
+
+      // Create geometry with rounded edges
+      const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
 
       const material = new THREE.MeshStandardMaterial({
         color: new THREE.Color(`hsl(${size * 40}, 70%, 50%)`),
-        roughness: 0.4, // Lower roughness for smoother appearance
-        metalness: 0.1  // Low metalness for better edge definition
+        roughness: 0.4,
+        metalness: 0.1
       });
 
       const pancake = new THREE.Mesh(geometry, material);
       pancake.position.y = index * 0.6;
       pancake.castShadow = true;
       pancake.receiveShadow = true;
+      // Rotate to face front
+      pancake.rotation.x = Math.PI / 2;
       group.add(pancake);
       pancakesRef.current.push(pancake);
     });
@@ -173,25 +194,20 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     if (isAnimating || !groupRef.current) return;
     setIsAnimating(true);
 
-    const stackHeight = 0.6; // Height between pancakes
-    const liftHeight = 2; // How high to lift the pancakes
+    const stackHeight = 0.6;
+    const liftHeight = 2;
 
-    // Create a temporary group for the flipping pancakes
     const flipGroup = new THREE.Group();
-    // Get pancakes from clicked index to the top
     const pancakesToFlip = pancakesRef.current.slice(index);
 
-    // Calculate the pivot point for the flip
     const pivotY = (index + pancakesToFlip.length) / 2 * stackHeight;
     flipGroup.position.y = pivotY;
 
-    // Calculate final Y positions for each pancake (in reverse order after flip)
     const finalPositions = pancakesToFlip.map((_, i) => ({
-      pancake: pancakesToFlip[pancakesToFlip.length - 1 - i], // Reverse order
-      finalY: (index + i) * stackHeight // New position starting from click index
+      pancake: pancakesToFlip[pancakesToFlip.length - 1 - i],
+      finalY: (index + i) * stackHeight
     }));
 
-    // Move pancakes to flip group, adjusting their positions relative to pivot
     pancakesToFlip.forEach((pancake, i) => {
       const relativeY = pancake.position.y - pivotY;
       pancake.position.y = relativeY;
@@ -200,40 +216,34 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
 
     groupRef.current.add(flipGroup);
 
-    // Create a GSAP timeline for the sequence of animations
     const tl = gsap.timeline({
       onComplete: () => {
-        // Reset the rotation
         flipGroup.rotation.x = 0;
 
-        // Move each pancake to its final calculated position
         finalPositions.forEach(({ pancake, finalY }) => {
           pancake.position.y = finalY;
           groupRef.current!.add(pancake);
         });
 
-        //sort pancakeRef by y position
-        pancakesRef.current.sort((a, b) => a.position.y - b.position.y)
-        // Clean up the flip group
+        pancakesRef.current.sort((a, b) => a.position.y - b.position.y);
         flipGroup.removeFromParent();
         setIsAnimating(false);
         onFlip(index);
       }
     });
 
-    // Add sequential animations to the timeline
     tl.to(flipGroup.position, {
-      y: pivotY + liftHeight, // Lift up
+      y: pivotY + liftHeight,
       duration: 0.3,
       ease: "power2.out"
     })
       .to(flipGroup.rotation, {
-        x: Math.PI, // Flip
+        x: Math.PI,
         duration: 0.6,
         ease: "power2.inOut"
       })
       .to(flipGroup.position, {
-        y: pivotY, // Drop back
+        y: pivotY,
         duration: 0.3
       });
   };

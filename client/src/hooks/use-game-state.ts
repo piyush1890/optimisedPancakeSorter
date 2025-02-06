@@ -1,15 +1,44 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { levels, calculateStars, isAscendingOrder } from "@/lib/levels";
 import { useToast } from "@/hooks/use-toast";
 
+// Load initial state from localStorage
+const loadGameState = () => {
+  try {
+    const savedState = localStorage.getItem('gameState');
+    if (savedState) {
+      const { currentLevel, totalStars, levelStars } = JSON.parse(savedState);
+      return {
+        currentLevel: currentLevel || 1,
+        totalStars: totalStars || 0,
+        levelStars: levelStars || {},
+      };
+    }
+  } catch (error) {
+    console.error('Failed to load game state:', error);
+  }
+  return { currentLevel: 1, totalStars: 0, levelStars: {} };
+};
+
 export function useGameState() {
-  const [currentLevel, setCurrentLevel] = useState(1);
+  const initialState = loadGameState();
+  const [currentLevel, setCurrentLevel] = useState(initialState.currentLevel);
   const [moves, setMoves] = useState(0);
-  const [totalStars, setTotalStars] = useState(0);
-  const [levelStars, setLevelStars] = useState<Record<number, number>>({});
+  const [totalStars, setTotalStars] = useState(initialState.totalStars);
+  const [levelStars, setLevelStars] = useState(initialState.levelStars);
   const level = levels.find(l => l.id === currentLevel);
   const [arrangement, setArrangement] = useState(level?.arrangement || []);
   const { toast } = useToast();
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    const gameState = {
+      currentLevel,
+      totalStars,
+      levelStars,
+    };
+    localStorage.setItem('gameState', JSON.stringify(gameState));
+  }, [currentLevel, totalStars, levelStars]);
 
   const flipStack = useCallback((index: number) => {
     setMoves(m => m + 1);
@@ -63,7 +92,6 @@ export function useGameState() {
       setCurrentLevel(nextLevelId);
       setArrangement(nextLevelData.arrangement);
       setMoves(0);
-      console.log('Moving to next level:', nextLevelId);
     } else {
       toast({
         title: "Game Complete!",

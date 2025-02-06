@@ -215,7 +215,6 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating,
         const randomY = 1 + Math.random() * 1.5;
         const randomX = (Math.random() - 0.5) * 2;
         const randomZ = (Math.random() - 0.5) * 2;
-        const randomRotation = Math.PI * (2 + Math.random() * 2);
         const randomDelay = i * 0.1 + Math.random() * 0.2;
 
         // Bounce animation with random horizontal movement
@@ -229,10 +228,10 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating,
           repeat: 3
         }, randomDelay);
 
-        // Add wobble effect
+        // Add a subtle wobble effect
         tl.to(pancake.rotation, {
-          x: pancake.rotation.x + (Math.random() - 0.5) * 0.5,
-          z: randomRotation,
+          x: pancake.rotation.x + (Math.random() - 0.5) * 0.2, // Reduced wobble amount
+          z: pancake.rotation.z + (Math.random() - 0.5) * 0.2, // Reduced rotation
           duration: 1,
           ease: "elastic.out(1, 0.3)",
           yoyo: true,

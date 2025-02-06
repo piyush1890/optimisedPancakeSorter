@@ -28,7 +28,7 @@ export function LevelSelect({ currentLevel, totalStars, levelStars }: LevelSelec
               variant="outline"
               size="icon"
               className="text-white bg-white/10 hover:bg-white/20 border-white/20"
-              onClick={() => navigate("/game/1")}
+              onClick={() => navigate(`/game/${currentLevel}`)}
             >
               <X className="h-4 w-4" />
             </Button>
@@ -38,7 +38,7 @@ export function LevelSelect({ currentLevel, totalStars, levelStars }: LevelSelec
         {/* Level Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {levels.map((level) => {
-            const isLocked = level.id > currentLevel;
+            const isLocked = level.id > currentLevel && !levelStars[level.id - 1];
             const stars = levelStars[level.id] || 0;
 
             return (

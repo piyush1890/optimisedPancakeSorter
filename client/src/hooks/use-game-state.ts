@@ -27,25 +27,34 @@ export function useGameState() {
 
   const goToLevel = useCallback((levelId: number) => {
     const levelData = levels.find(l => l.id === levelId);
-    if (levelData) {
+    if (levelData && levelId <= Math.max(currentLevel, ...Object.keys(levelStars).map(Number))) {
       setCurrentLevel(levelId);
       setArrangement(levelData.arrangement);
       setMoves(0);
     }
-  }, []);
+  }, [currentLevel, levelStars]);
 
   const nextLevel = useCallback(() => {
-    // Add current level stars to total and level record before moving to next level
-    const currentStars = level ? calculateStars(moves, level.minMoves) : 0;
-    setTotalStars(prev => prev + currentStars);
+    if (!level) return;
+
+    // Calculate stars for current level
+    const currentStars = calculateStars(moves, level.minMoves);
+
+    // Update total stars and level stars
+    setTotalStars(prev => {
+      const existingStars = levelStars[currentLevel] || 0;
+      return prev - existingStars + currentStars;
+    });
+
     setLevelStars(prev => ({
       ...prev,
       [currentLevel]: Math.max(currentStars, prev[currentLevel] || 0)
     }));
 
+    // Move to next level
     const nextLevelData = levels.find(l => l.id === currentLevel + 1);
     if (nextLevelData) {
-      setCurrentLevel(l => l + 1);
+      setCurrentLevel(prev => prev + 1);
       setArrangement(nextLevelData.arrangement);
       setMoves(0);
     } else {
@@ -54,7 +63,7 @@ export function useGameState() {
         description: "You've completed all available levels!"
       });
     }
-  }, [currentLevel, moves, level, toast]);
+  }, [currentLevel, moves, level, levelStars, toast]);
 
   return {
     currentLevel,

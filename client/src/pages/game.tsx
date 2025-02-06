@@ -24,7 +24,7 @@ export default function Game() {
     level, 
     flipStack, 
     checkWin, 
-    nextLevel, 
+    nextLevel,
     goToLevel,
     stars, 
     totalStars 
@@ -58,7 +58,7 @@ export default function Game() {
         // Delay showing the completion dialog to allow for victory animation
         setTimeout(() => {
           setShowComplete(true);
-        }, 2000); // Reduced delay to 2 seconds for better UX
+        }, 2000);
       }
     };
 
@@ -69,9 +69,9 @@ export default function Game() {
   }, [arrangement, checkWin, isAnimating, showComplete, isVictory]);
 
   const handleLevelComplete = () => {
+    console.log('Level complete handler called');
     setShowComplete(false);
     setIsVictory(false);
-    // Call nextLevel which will update stars and progress
     nextLevel();
   };
 

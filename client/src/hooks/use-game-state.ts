@@ -27,7 +27,7 @@ export function useGameState() {
 
   const goToLevel = useCallback((levelId: number) => {
     const levelData = levels.find(l => l.id === levelId);
-    // Allow access if the level is current or previous, or if previous level is completed
+    // Allow access if the level exists and is either the current level or we have stars in the previous level
     if (levelData && (levelId <= currentLevel || levelStars[levelId - 1])) {
       setCurrentLevel(levelId);
       setArrangement(levelData.arrangement);
@@ -41,7 +41,7 @@ export function useGameState() {
     // Calculate stars for current level
     const currentStars = calculateStars(moves, level.minMoves);
 
-    // Update level stars and only add new stars to total
+    // Update level stars and total stars
     const existingStars = levelStars[currentLevel] || 0;
     if (currentStars > existingStars) {
       setTotalStars(prev => prev + (currentStars - existingStars));
@@ -59,6 +59,7 @@ export function useGameState() {
       setCurrentLevel(nextLevelId);
       setArrangement(nextLevelData.arrangement);
       setMoves(0);
+      console.log('Moving to next level:', nextLevelId);
     } else {
       toast({
         title: "Game Complete!",

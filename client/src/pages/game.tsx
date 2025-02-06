@@ -13,9 +13,12 @@ export default function Game() {
   // Check win condition whenever arrangement changes and animation is complete
   useEffect(() => {
     const checkWinCondition = () => {
-      if (checkWin() && !isAnimating && !showComplete) {
+      if (checkWin() && !isAnimating && !showComplete && !isVictory) {
         setIsVictory(true);
-        setShowComplete(true);
+        // Delay showing the completion dialog to allow for victory animation
+        setTimeout(() => {
+          setShowComplete(true);
+        }, 5000); // 5 second delay
       }
     };
 
@@ -23,7 +26,7 @@ export default function Game() {
     if (!isAnimating) {
       checkWinCondition();
     }
-  }, [arrangement, checkWin, isAnimating, showComplete]);
+  }, [arrangement, checkWin, isAnimating, showComplete, isVictory]);
 
   const handleLevelComplete = () => {
     setShowComplete(false);

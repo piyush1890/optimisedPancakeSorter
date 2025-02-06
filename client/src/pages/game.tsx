@@ -82,12 +82,13 @@ export default function Game() {
           <div className="flex justify-between items-center mb-2">
             <div className="flex items-center gap-4">
               <Button
-                variant="ghost"
-                size="icon"
-                className="text-white/70 hover:text-white hover:bg-white/20"
+                variant="outline"
+                size="sm"
+                className="text-white bg-white/10 hover:bg-white/20 border-white/20"
                 onClick={() => navigate("/")}
               >
-                <ChevronLeft className="h-6 w-6" />
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Levels
               </Button>
               <h2 className="text-lg font-bold text-white/90">Level {currentLevel}</h2>
               <div className="flex items-center gap-1">

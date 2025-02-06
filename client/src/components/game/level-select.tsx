@@ -13,6 +13,14 @@ interface LevelSelectProps {
 export function LevelSelect({ currentLevel, totalStars, levelStars }: LevelSelectProps) {
   const [, navigate] = useLocation();
 
+  // Helper function to check if a level is unlocked
+  const isLevelUnlocked = (levelId: number) => {
+    // First level is always unlocked
+    if (levelId === 1) return true;
+    // Level is unlocked if it's current level or previous level has stars
+    return levelId <= currentLevel || levelStars[levelId - 1] > 0;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-primary/40 to-indigo-400 p-4">
       <div className="container max-w-4xl mx-auto">
@@ -38,7 +46,7 @@ export function LevelSelect({ currentLevel, totalStars, levelStars }: LevelSelec
         {/* Level Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {levels.map((level) => {
-            const isLocked = level.id > currentLevel && !levelStars[level.id - 1];
+            const isLocked = !isLevelUnlocked(level.id);
             const stars = levelStars[level.id] || 0;
 
             return (

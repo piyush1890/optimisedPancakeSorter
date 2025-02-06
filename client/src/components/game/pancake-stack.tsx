@@ -17,7 +17,6 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
   const rendererRef = useRef<THREE.WebGLRenderer>();
   const pancakesRef = useRef<THREE.Mesh[]>([]);
   const groupRef = useRef<THREE.Group>();
-  const particlesRef = useRef<THREE.Mesh[]>([]);
 
   // Setup scene and renderer
   useEffect(() => {
@@ -114,84 +113,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     };
   }, []);
 
-  // Add shatter effect
-  const createShatterEffect = () => {
-    if (!groupRef.current || !sceneRef.current) return;
-
-    setIsAnimating(true);
-    const particles: THREE.Mesh[] = [];
-    const particlesGroup = new THREE.Group();
-    sceneRef.current.add(particlesGroup);
-
-    // Create particles for each pancake
-    pancakesRef.current.forEach((pancake, index) => {
-      const position = new THREE.Vector3();
-      pancake.getWorldPosition(position);
-
-      // Create multiple small cubes as shatter particles
-      for (let i = 0; i < 20; i++) {
-        const size = Math.random() * 0.2 + 0.1;
-        const geometry = new THREE.BoxGeometry(size, size, size);
-        const material = new THREE.MeshStandardMaterial({
-          color: (pancake.material as THREE.MeshStandardMaterial).color,
-          roughness: 0.7,
-          metalness: 0.2
-        });
-
-        const particle = new THREE.Mesh(geometry, material);
-        particle.position.copy(position);
-        particle.castShadow = true;
-        particlesGroup.add(particle);
-        particles.push(particle);
-
-        // Animate each particle
-        gsap.to(particle.position, {
-          x: position.x + (Math.random() - 0.5) * 10,
-          y: position.y + Math.random() * 5,
-          z: position.z + (Math.random() - 0.5) * 10,
-          duration: 1.5,
-          ease: "power2.out"
-        });
-
-        gsap.to(particle.rotation, {
-          x: Math.random() * Math.PI * 4,
-          y: Math.random() * Math.PI * 4,
-          z: Math.random() * Math.PI * 4,
-          duration: 1.5,
-          ease: "power2.out"
-        });
-
-        gsap.to(particle.scale, {
-          x: 0,
-          y: 0,
-          z: 0,
-          duration: 1.5,
-          ease: "power2.in",
-          onComplete: () => {
-            if (i === 19 && index === pancakesRef.current.length - 1) {
-              // Last particle of last pancake
-              particlesGroup.removeFromParent();
-              particles.forEach(p => {
-                p.geometry.dispose();
-                (p.material as THREE.Material).dispose();
-              });
-              setIsAnimating(false);
-            }
-          }
-        });
-      }
-    });
-
-    // Hide original pancakes during the effect
-    groupRef.current.visible = false;
-
-    // After particles fade out, show the new arrangement
-    gsap.delayedCall(1.5, () => {
-      groupRef.current!.visible = true;
-    });
-  };
-
-  // Update the pancakes effect to include the shatter transition
+  // Create or update pancakes when arrangement changes
   useEffect(() => {
     if (!groupRef.current || !sceneRef.current) return;
 
@@ -203,7 +125,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     });
     pancakesRef.current = [];
 
-    // Create new pancakes with scale animation
+    // Create new pancakes based on current arrangement
     arrangement.forEach((size, index) => {
       const shape = new THREE.Shape();
       const width = size * 2;
@@ -242,19 +164,8 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
       pancake.castShadow = true;
       pancake.receiveShadow = true;
       pancake.rotation.x = Math.PI / 2;
-      pancake.scale.set(0, 0, 0); // Start with zero scale
       groupRef.current!.add(pancake);
       pancakesRef.current.push(pancake);
-
-      // Animate pancake appearance
-      gsap.to(pancake.scale, {
-        x: 1,
-        y: 1,
-        z: 1,
-        duration: 0.5,
-        delay: index * 0.1,
-        ease: "back.out(1.7)"
-      });
     });
   }, [arrangement]);
 
@@ -279,14 +190,12 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
         soundEffect.playClick();
         const clickedIndex = pancakesRef.current.indexOf(intersects[0].object as THREE.Mesh);
         flipPancakes(clickedIndex);
-        onFlip(clickedIndex);
       }
     }
 
     containerRef.current.addEventListener('click', handleClick);
     return () => containerRef.current?.removeEventListener('click', handleClick);
   }, [isAnimating]);
-
 
   const flipPancakes = (index: number) => {
     if (isAnimating || !groupRef.current) return;
@@ -326,6 +235,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
         pancakesRef.current.sort((a, b) => a.position.y - b.position.y);
         flipGroup.removeFromParent();
         setIsAnimating(false);
+        onFlip(index);
       }
     });
 

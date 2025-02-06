@@ -39,6 +39,8 @@ export default function Game() {
   const calculateTutorialPositions = useCallback(() => {
     if (!currentLevel) return;
 
+    console.log('Calculating tutorial positions for level:', currentLevel);
+
     // Use window dimensions for better positioning
     const windowHeight = window.innerHeight;
     const windowWidth = window.innerWidth;
@@ -49,6 +51,7 @@ export default function Game() {
 
     if (currentLevel === 1) {
       // For level 1, show a simple flip at position 2
+      console.log('Setting level 1 tutorial position');
       setTutorialPositions([
         { 
           x: centerX,
@@ -57,6 +60,7 @@ export default function Game() {
       ]);
     } else if (currentLevel === 2) {
       // For level 2, show a sequence of two flips
+      console.log('Setting level 2 tutorial position');
       setTutorialPositions([
         { 
           x: centerX,
@@ -72,8 +76,16 @@ export default function Game() {
 
   // Show tutorial for levels 1 and 2 if not completed
   useEffect(() => {
+    console.log('Tutorial effect running:', {
+      currentLevel,
+      level1Completed: tutorialState.level1Completed,
+      level2Completed: tutorialState.level2Completed,
+      showTutorial
+    });
+
     if ((currentLevel === 1 && !tutorialState.level1Completed) ||
         (currentLevel === 2 && !tutorialState.level2Completed)) {
+      console.log('Should show tutorial');
       // Add a longer delay to ensure game area is mounted
       const timer = setTimeout(() => {
         setShowTutorial(true);
@@ -81,6 +93,7 @@ export default function Game() {
       }, 1500); // Increased delay
       return () => clearTimeout(timer);
     } else {
+      console.log('Should hide tutorial');
       setShowTutorial(false);
     }
   }, [currentLevel, tutorialState, calculateTutorialPositions]);

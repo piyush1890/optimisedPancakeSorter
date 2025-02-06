@@ -225,29 +225,28 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating,
         const randomY = 1 + Math.random() * 1.5;
         const randomX = (Math.random() - 0.5) * 2;
         const randomZ = (Math.random() - 0.5) * 2;
-        const randomDelay = i * 0.1 + Math.random() * 0.2;
 
         // Bounce animation with random horizontal movement
         tl.to(pancake.position, {
           y: `+=${randomY}`,
           x: `+=${randomX}`,
           z: `+=${randomZ}`,
-          duration: 0.5,
+          duration: 0.3, // Faster animation
           ease: "power2.out",
           yoyo: true,
           repeat: -1, // Infinite repeat
-          repeatDelay: Math.random() * 0.3 // Add slight random delay between repeats
-        }, `>-0.3`); // Start slightly before previous animation ends for smoother transition
+          repeatDelay: 0 // No delay between repeats for continuous motion
+        }, 0.5); // Start all pancakes dancing at the same time
 
         // Add a subtle wobble effect
         tl.to(pancake.rotation, {
-          x: pancake.rotation.x + (Math.random() - 0.5) * 0.2, // Reduced wobble amount
-          z: pancake.rotation.z + (Math.random() - 0.5) * 0.2, // Reduced rotation
-          duration: 1,
+          x: pancake.rotation.x + (Math.random() - 0.5) * 0.2,
+          z: pancake.rotation.z + (Math.random() - 0.5) * 0.2,
+          duration: 0.6, // Faster rotation
           ease: "elastic.out(1, 0.3)",
           yoyo: true,
           repeat: -1
-        }, `>-0.3`);
+        }, 0.5); // Start rotation at the same time as bouncing
       });
     }
   }, [isVictory, isAnimating, setIsAnimating]);

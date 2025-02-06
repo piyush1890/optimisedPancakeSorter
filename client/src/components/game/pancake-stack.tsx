@@ -232,9 +232,8 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
       }
     });
 
-    gsap.to(flipGroup, {
-      rotation: Math.PI,
-      y: pivotY,
+    gsap.to(flipGroup.rotation, {
+      x: Math.PI,
       duration: 0.7,
       ease: "power1.inOut",
       onUpdate: function() {

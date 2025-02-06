@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useGameState } from "@/hooks/use-game-state";
+import { useTutorialState } from "@/hooks/use-tutorial-state";
 import { PancakeStack } from "@/components/game/pancake-stack";
 import { LevelComplete } from "@/components/game/level-complete";
+import { TutorialHand } from "@/components/game/tutorial-hand";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Volume2, VolumeX, Star, ChevronLeft } from "lucide-react";
@@ -14,8 +16,11 @@ export default function Game() {
   const [showComplete, setShowComplete] = useState(false);
   const [isVictory, setIsVictory] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialPositions, setTutorialPositions] = useState<{ x: number; y: number }[]>([]);
   const [, params] = useRoute("/game/:id");
   const [, navigate] = useLocation();
+  const { tutorialState, completeTutorial } = useTutorialState();
 
   const { 
     currentLevel, 
@@ -29,6 +34,48 @@ export default function Game() {
     stars, 
     totalStars 
   } = useGameState();
+
+  // Calculate tutorial hand positions based on level
+  const calculateTutorialPositions = useCallback(() => {
+    const gameArea = document.querySelector('.game-area');
+    if (!gameArea) return;
+
+    const rect = gameArea.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+
+    if (currentLevel === 1) {
+      // For level 1, show a simple flip at position 2
+      setTutorialPositions([
+        { x: centerX, y: rect.top + rect.height / 2 }
+      ]);
+    } else if (currentLevel === 2) {
+      // For level 2, show a sequence of two flips
+      setTutorialPositions([
+        { x: centerX, y: rect.top + rect.height / 2 - 50 },
+        { x: centerX, y: rect.top + rect.height / 2 + 50 }
+      ]);
+    }
+  }, [currentLevel]);
+
+  // Show tutorial for levels 1 and 2 if not completed
+  useEffect(() => {
+    if ((currentLevel === 1 && !tutorialState.level1Completed) ||
+        (currentLevel === 2 && !tutorialState.level2Completed)) {
+      const timer = setTimeout(() => {
+        setShowTutorial(true);
+        calculateTutorialPositions();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [currentLevel, tutorialState, calculateTutorialPositions]);
+
+  // Handle tutorial completion
+  const handleTutorialComplete = () => {
+    setShowTutorial(false);
+    if (currentLevel === 1 || currentLevel === 2) {
+      completeTutorial(currentLevel as 1 | 2);
+    }
+  };
 
   // Set the level from URL parameter
   useEffect(() => {
@@ -71,7 +118,6 @@ export default function Game() {
     setIsVictory(false);
     const nextLevelNumber = currentLevel + 1;
     nextLevel();
-    // Update the URL to reflect the new level
     navigate(`/game/${nextLevelNumber}`);
   };
 
@@ -118,13 +164,23 @@ export default function Game() {
       </div>
 
       {/* Game Area */}
-      <PancakeStack
-        arrangement={arrangement}
-        onFlip={flipStack}
-        isAnimating={isAnimating}
-        setIsAnimating={setIsAnimating}
-        isVictory={isVictory}
-      />
+      <div className="game-area">
+        <PancakeStack
+          arrangement={arrangement}
+          onFlip={flipStack}
+          isAnimating={isAnimating}
+          setIsAnimating={setIsAnimating}
+          isVictory={isVictory}
+        />
+      </div>
+
+      {/* Tutorial Hand */}
+      {showTutorial && tutorialPositions.length > 0 && (
+        <TutorialHand
+          positions={tutorialPositions}
+          onClick={handleTutorialComplete}
+        />
+      )}
 
       {/* Level Complete Dialog */}
       <LevelComplete

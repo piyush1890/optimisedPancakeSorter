@@ -213,8 +213,8 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating,
       pancakesRef.current.forEach((pancake, i) => {
         const baseY = i * 0.6; // Original Y position
         tl.to(pancake.position, {
-          y: baseY * 1.5, // Increase spacing by 50%
-          duration: 0.5,
+          y: baseY * 2, // Double the spacing for more dramatic effect
+          duration: 0.8,
           ease: "power2.inOut"
         }, 0); // Start all spacing animations at the same time
       });
@@ -231,22 +231,22 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating,
           y: `+=${randomY}`,
           x: `+=${randomX}`,
           z: `+=${randomZ}`,
-          duration: 0.3, // Faster animation
+          duration: 0.3, // Fast animation
           ease: "power2.out",
           yoyo: true,
           repeat: -1, // Infinite repeat
           repeatDelay: 0 // No delay between repeats for continuous motion
-        }, 0.5); // Start all pancakes dancing at the same time
+        }, 0.8); // Start after spacing animation completes
 
         // Add a subtle wobble effect
         tl.to(pancake.rotation, {
           x: pancake.rotation.x + (Math.random() - 0.5) * 0.2,
           z: pancake.rotation.z + (Math.random() - 0.5) * 0.2,
-          duration: 0.6, // Faster rotation
-          ease: "elastic.out(1, 0.3)",
+          duration: 0.6, // Fast rotation
+          ease: "back.inOut(2)", // Smoother rotation transition
           yoyo: true,
           repeat: -1
-        }, 0.5); // Start rotation at the same time as bouncing
+        }, 0.8); // Start rotation at the same time as bouncing
       });
     }
   }, [isVictory, isAnimating, setIsAnimating]);

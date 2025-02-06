@@ -22,9 +22,19 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
 
     // Setup scene
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    scene.background = new THREE.Color(0x1a1a1a); // Dark background for better contrast
 
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ 
+      antialias: true,
+      shadowMap: {
+        enabled: true,
+        type: THREE.PCFSoftShadowMap
+      }
+    });
+
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.setSize(window.innerWidth, window.innerHeight);
     containerRef.current.appendChild(renderer.domElement);
 
@@ -41,28 +51,59 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     scene.add(group);
     groupRef.current = group;
 
+    // Add ground plane to receive shadows
+    const groundGeometry = new THREE.PlaneGeometry(20, 20);
+    const groundMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0x222222,
+      roughness: 0.8,
+      metalness: 0.2
+    });
+    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.5;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
     // Create pancakes
     arrangement.forEach((size, index) => {
-      const geometry = new THREE.BoxGeometry(size * 2, 0.5, 2);
-      const material = new THREE.MeshPhongMaterial({ 
+      const geometry = new THREE.CylinderGeometry(size * 0.8, size * 0.8, 0.3, 32);
+      const material = new THREE.MeshStandardMaterial({ 
         color: new THREE.Color(`hsl(${size * 40}, 70%, 50%)`),
-        specular: 0x404040,
-        shininess: 30
+        roughness: 0.7,
+        metalness: 0.3
       });
 
       const pancake = new THREE.Mesh(geometry, material);
       pancake.position.y = index * 0.6;
+      pancake.castShadow = true;
+      pancake.receiveShadow = true;
       group.add(pancake);
       pancakesRef.current.push(pancake);
     });
 
     // Add lighting
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(5, 5, 5);
-    scene.add(light);
+    // Main directional light
+    const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+    mainLight.position.set(5, 10, 5);
+    mainLight.castShadow = true;
+    mainLight.shadow.mapSize.width = 2048;
+    mainLight.shadow.mapSize.height = 2048;
+    mainLight.shadow.camera.near = 0.5;
+    mainLight.shadow.camera.far = 50;
+    mainLight.shadow.camera.left = -10;
+    mainLight.shadow.camera.right = 10;
+    mainLight.shadow.camera.top = 10;
+    mainLight.shadow.camera.bottom = -10;
+    scene.add(mainLight);
 
-    const ambientLight = new THREE.AmbientLight(0x404040);
+    // Ambient light for general illumination
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
     scene.add(ambientLight);
+
+    // Add a soft fill light from the opposite side
+    const fillLight = new THREE.DirectionalLight(0x4444ff, 0.3);
+    fillLight.position.set(-5, 3, -5);
+    scene.add(fillLight);
 
     // Animation loop
     function animate() {
@@ -71,8 +112,20 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     }
     animate();
 
+    // Handle window resize
+    function handleResize() {
+      if (!cameraRef.current || !rendererRef.current) return;
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      cameraRef.current.aspect = width / height;
+      cameraRef.current.updateProjectionMatrix();
+      rendererRef.current.setSize(width, height);
+    }
+    window.addEventListener('resize', handleResize);
+
     // Cleanup
     return () => {
+      window.removeEventListener('resize', handleResize);
       renderer.dispose();
       containerRef.current?.removeChild(renderer.domElement);
     };
@@ -118,13 +171,13 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     const pancakesToFlip = pancakesRef.current.slice(index);
 
     // Calculate the pivot point for the flip
-    const pivotY = index * stackHeight;
+    const pivotY = (index + pancakesRef.current.length)/2 * stackHeight;
     flipGroup.position.y = pivotY;
 
     // Calculate final Y positions for each pancake (in reverse order after flip)
     const finalPositions = pancakesToFlip.map((_, i) => ({
-      pancake: pancakesToFlip[pancakesToFlip.length - 1 - i], // Reverse order
-      finalY: (index + i) * stackHeight // New position starting from click index
+      pancake: pancakesToFlip[i], // Reverse order
+      finalY: pancakesRef.current[( pancakesRef.current.length -1 - i)].position.y // New position starting from click index
     }));
 
     // Move pancakes to flip group, adjusting their positions relative to pivot
@@ -148,10 +201,13 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
           groupRef.current!.add(pancake);
         });
 
-        // Clean up the flip group
+        //sort pancakeRef by y position
+        pancakesRef.current.sort((a, b) => a.position.y - b.position.y)
+              // Clean up the flip group
+        console.log(pancakesRef)
         flipGroup.removeFromParent();
         setIsAnimating(false);
-        onFlip(index);
+        //onFlip(index);
       }
     });
 
@@ -169,7 +225,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     .to(flipGroup.position, {
       y: pivotY, // Drop back
       duration: 0.3,
-      ease: "bounce.out"
+      //ease: "bounce.out"
     });
   };
 

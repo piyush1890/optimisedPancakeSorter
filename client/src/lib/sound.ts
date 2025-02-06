@@ -1,14 +1,21 @@
 // Simple sound effect manager using Web Audio API
 export class SoundEffect {
-  private audioContext: AudioContext;
-  private gainNode: GainNode;
+  private audioContext: AudioContext | null = null;
+  private gainNode: GainNode | null = null;
   private enabled: boolean = true;
 
-  constructor() {
-    this.audioContext = new AudioContext();
-    this.gainNode = this.audioContext.createGain();
-    this.gainNode.connect(this.audioContext.destination);
-    this.gainNode.gain.value = 0.3; // Set volume to 30%
+  private initializeAudioContext() {
+    if (!this.audioContext) {
+      try {
+        this.audioContext = new AudioContext();
+        this.gainNode = this.audioContext.createGain();
+        this.gainNode.connect(this.audioContext.destination);
+        this.gainNode.gain.value = 0.3; // Set volume to 30%
+      } catch (error) {
+        console.warn('Web Audio API not supported:', error);
+      }
+    }
+    return this.audioContext && this.gainNode;
   }
 
   setEnabled(enabled: boolean) {
@@ -16,31 +23,31 @@ export class SoundEffect {
   }
 
   playClick() {
-    if (!this.enabled) return;
+    if (!this.enabled || !this.initializeAudioContext()) return;
 
-    const oscillator = this.audioContext.createOscillator();
-    oscillator.connect(this.gainNode);
+    const oscillator = this.audioContext!.createOscillator();
+    oscillator.connect(this.gainNode!);
     oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(400, this.audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(400, this.audioContext!.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(
       200,
-      this.audioContext.currentTime + 0.1
+      this.audioContext!.currentTime + 0.1
     );
     oscillator.start();
-    oscillator.stop(this.audioContext.currentTime + 0.1);
+    oscillator.stop(this.audioContext!.currentTime + 0.1);
   }
 
   playVictory() {
-    if (!this.enabled) return;
+    if (!this.enabled || !this.initializeAudioContext()) return;
 
-    const now = this.audioContext.currentTime;
+    const now = this.audioContext!.currentTime;
 
     // Create oscillator for trumpet-like sound
-    const oscillator = this.audioContext.createOscillator();
-    const gainNode = this.audioContext.createGain();
+    const oscillator = this.audioContext!.createOscillator();
+    const gainNode = this.audioContext!.createGain();
 
     oscillator.connect(gainNode);
-    gainNode.connect(this.gainNode);
+    gainNode.connect(this.gainNode!);
 
     // Set up trumpet-like sound
     oscillator.type = 'square';

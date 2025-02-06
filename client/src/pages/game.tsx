@@ -4,7 +4,7 @@ import { PancakeStack } from "@/components/game/pancake-stack";
 import { LevelComplete } from "@/components/game/level-complete";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { Volume2, VolumeX } from "lucide-react";
+import { Volume2, VolumeX, Star } from "lucide-react";
 import { soundEffect } from "@/lib/sound";
 
 export default function Game() {
@@ -12,7 +12,7 @@ export default function Game() {
   const [showComplete, setShowComplete] = useState(false);
   const [isVictory, setIsVictory] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const { currentLevel, moves, arrangement, level, flipStack, checkWin, nextLevel, stars } = useGameState();
+  const { currentLevel, moves, arrangement, level, flipStack, checkWin, nextLevel, stars, totalStars } = useGameState();
 
   // Reset animation states when level changes
   useEffect(() => {
@@ -56,7 +56,13 @@ export default function Game() {
       <div className="fixed top-0 left-0 right-0 p-4 z-10 bg-gradient-to-b from-black/20 to-transparent">
         <div className="container max-w-lg mx-auto">
           <div className="flex justify-between items-center mb-2">
-            <h2 className="text-lg font-bold text-white/90">Level {currentLevel}</h2>
+            <div className="flex items-center gap-4">
+              <h2 className="text-lg font-bold text-white/90">Level {currentLevel}</h2>
+              <div className="flex items-center gap-1">
+                <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                <span className="text-white/90">{totalStars}</span>
+              </div>
+            </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 {soundEnabled ? (

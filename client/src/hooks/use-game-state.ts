@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 export function useGameState() {
   const [currentLevel, setCurrentLevel] = useState(1);
   const [moves, setMoves] = useState(0);
+  const [totalStars, setTotalStars] = useState(0);
   const level = levels.find(l => l.id === currentLevel);
   const [arrangement, setArrangement] = useState(level?.arrangement || []);
   const { toast } = useToast();
@@ -24,6 +25,10 @@ export function useGameState() {
   }, [arrangement]);
 
   const nextLevel = useCallback(() => {
+    // Add current level stars to total before moving to next level
+    const currentStars = level ? calculateStars(moves, level.minMoves) : 0;
+    setTotalStars(prev => prev + currentStars);
+
     const nextLevelData = levels.find(l => l.id === currentLevel + 1);
     if (nextLevelData) {
       setCurrentLevel(l => l + 1);
@@ -35,7 +40,7 @@ export function useGameState() {
         description: "You've completed all available levels!"
       });
     }
-  }, [currentLevel, toast]);
+  }, [currentLevel, moves, level, toast]);
 
   return {
     currentLevel,
@@ -45,6 +50,7 @@ export function useGameState() {
     flipStack,
     checkWin,
     nextLevel,
-    stars: level ? calculateStars(moves, level.minMoves) : 0
+    stars: level ? calculateStars(moves, level.minMoves) : 0,
+    totalStars
   };
 }

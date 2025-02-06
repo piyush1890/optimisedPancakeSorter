@@ -220,36 +220,33 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating,
       });
 
       // Then start the continuous bouncing animations
-      pancakesRef.current.forEach((pancake) => {
-        // Bounce animation with dynamic random movement
-        tl.to(pancake.position, {
-          y: `random(${pancake.position.y + 0.5}, ${pancake.position.y + 2})`,
-          x: "random(-1, 1)",
-          z: "random(-1, 1)",
-          duration: 0.3,
-          ease: "power2.inOut",
-          yoyo: true,
-          repeat: -1,
-          modifiers: {
-            y: gsap.utils.unitize(y => Number(y)), // Ensure proper number conversion
-            x: gsap.utils.unitize(x => Number(x)),
-            z: gsap.utils.unitize(z => Number(z))
-          }
-        }, 0.5); // Start after spacing animation
+      pancakesRef.current.forEach((pancake, i) => {
+        // Random values for more varied animation
+        const randomY = 1 + Math.random() * 1.5;
+        const randomX = (Math.random() - 0.5) * 2;
+        const randomZ = (Math.random() - 0.5) * 2;
 
-        // Add a dynamic wobble effect
-        tl.to(pancake.rotation, {
-          x: "random(-0.2, 0.2)",
-          z: "random(-0.2, 0.2)",
-          duration: 0.4,
-          ease: "power1.inOut",
+        // Bounce animation with random horizontal movement
+        tl.to(pancake.position, {
+          y: `+=${randomY}`,
+          x: `+=${randomX}`,
+          z: `+=${randomZ}`,
+          duration: 0.3, // Faster animation
+          ease: "power2.out",
           yoyo: true,
-          repeat: -1,
-          modifiers: {
-            x: gsap.utils.unitize(x => pancake.rotation.x + Number(x)),
-            z: gsap.utils.unitize(z => pancake.rotation.z + Number(z))
-          }
-        }, 0.5);
+          repeat: -1, // Infinite repeat
+          repeatDelay: 0 // No delay between repeats for continuous motion
+        }, 0.5); // Start all pancakes dancing at the same time
+
+        // Add a subtle wobble effect
+        tl.to(pancake.rotation, {
+          x: pancake.rotation.x + (Math.random() - 0.5) * 0.2,
+          z: pancake.rotation.z + (Math.random() - 0.5) * 0.2,
+          duration: 0.6, // Faster rotation
+          ease: "elastic.out(1, 0.3)",
+          yoyo: true,
+          repeat: -1
+        }, 0.5); // Start rotation at the same time as bouncing
       });
     }
   }, [isVictory, isAnimating, setIsAnimating]);

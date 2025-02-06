@@ -110,9 +110,13 @@ export default function Game() {
   useEffect(() => {
     if (params?.id) {
       const levelId = parseInt(params.id);
+      // Reset tutorials if starting from level 1
+      if (levelId === 1) {
+        completeTutorial(1);
+      }
       goToLevel(levelId);
     }
-  }, [params?.id, goToLevel]);
+  }, [params?.id, goToLevel, completeTutorial]);
 
   // Reset animation states when level changes
   useEffect(() => {

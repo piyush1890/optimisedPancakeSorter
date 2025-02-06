@@ -30,8 +30,13 @@ export function useTutorialState() {
     }));
   };
 
+  const resetTutorials = () => {
+    setTutorialState({ level1Completed: false, level2Completed: false });
+  };
+
   return {
     tutorialState,
-    completeTutorial
+    completeTutorial,
+    resetTutorials
   };
 }

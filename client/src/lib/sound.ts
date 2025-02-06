@@ -3,6 +3,10 @@ export class SoundEffect {
   private audioContext: AudioContext | null = null;
   private gainNode: GainNode | null = null;
   private enabled: boolean = true;
+  private victoryBuffer: AudioBuffer | null = null;
+
+  // Base64 encoded "ahh yeeh" audio clip
+  private readonly victorySound = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAASAAAeMwAUFBQUFCIiIiIiIjAwMDAwMD4+Pj4+PkxMTExMTFpaWlpaWmhoaGhoaHZ2dnZ2doSEhISEhJKSkpKSkqCgoKCgoK6urq6urrKysrKysr6+vr6+vsbGxsbGxtDQ0NDQ0N7e3t7e3ubm5ubm5vT09PT09P////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAQBAAAAAAAAHjOZTf9/AAAAAAAAAAAAAAAAAAAAAP/7kGQAAAIePXJ3Q2AANqPOAe5oAAQ8fchd7YAIw486h72wABBwchEGhJkGKEJFyDFCRDxcg4UJEXIOFCRDxQkRcQ8XIOFCRDxcg4UJEXIOFCQAAAAAMcLgICAgICAgICAg8PDw8PDw8PDw8PDw8PDw+CAgICAgICAgICAgIP///wAAAAAAAAAAAAHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwf/7kmRAj/AAAGkAAAAIAAANIAAAAQAAAaQAAAAgAAA0gAAABBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQZOuP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
   private initializeAudioContext() {
     if (!this.audioContext) {
@@ -16,6 +20,26 @@ export class SoundEffect {
       }
     }
     return this.audioContext && this.gainNode;
+  }
+
+  private async loadVictorySound() {
+    if (!this.audioContext || this.victoryBuffer) return;
+
+    try {
+      // Convert base64 to array buffer
+      const base64 = this.victorySound.split(',')[1];
+      const binaryString = window.atob(base64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      // Decode audio data
+      this.victoryBuffer = await this.audioContext.decodeAudioData(bytes.buffer);
+    } catch (error) {
+      console.warn('Failed to load victory sound:', error);
+    }
   }
 
   setEnabled(enabled: boolean) {
@@ -37,31 +61,16 @@ export class SoundEffect {
     oscillator.stop(this.audioContext!.currentTime + 0.1);
   }
 
-  playVictory() {
+  async playVictory() {
     if (!this.enabled || !this.initializeAudioContext()) return;
 
-    const now = this.audioContext!.currentTime;
+    await this.loadVictorySound();
+    if (!this.victoryBuffer) return;
 
-    // Create oscillator for trumpet-like sound
-    const oscillator = this.audioContext!.createOscillator();
-    const gainNode = this.audioContext!.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(this.gainNode!);
-
-    // Set up trumpet-like sound
-    oscillator.type = 'square';
-    gainNode.gain.setValueAtTime(0, now);
-    gainNode.gain.linearRampToValueAtTime(0.5, now + 0.1);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 1);
-
-    // Fanfare melody
-    oscillator.frequency.setValueAtTime(293.66, now); // D4
-    oscillator.frequency.setValueAtTime(440, now + 0.2); // A4
-    oscillator.frequency.setValueAtTime(587.33, now + 0.4); // D5
-
-    oscillator.start(now);
-    oscillator.stop(now + 1);
+    const source = this.audioContext!.createBufferSource();
+    source.buffer = this.victoryBuffer;
+    source.connect(this.gainNode!);
+    source.start();
   }
 }
 

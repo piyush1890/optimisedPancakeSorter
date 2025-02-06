@@ -13,9 +13,9 @@ export function useGameState() {
   const flipStack = useCallback((index: number) => {
     setMoves(m => m + 1);
     setArrangement(arr => {
-      const newArr = [...arr];
-      const subArray = newArr.slice(0, index + 1).reverse();
-      newArr.splice(0, index + 1, ...subArray);
+      const newArr = [... arr];
+      const subArray = newArr.slice(index, newArr.length).reverse();
+      newArr.splice(index, newArr.length, ...subArray);
       return newArr;
     });
   }, []);

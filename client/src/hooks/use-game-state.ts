@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { levels, calculateStars, isDescendingOrder } from "@/lib/levels";
+import { levels, calculateStars, isAscendingOrder } from "@/lib/levels";
 import { useToast } from "@/hooks/use-toast";
 
 export function useGameState() {
@@ -21,7 +21,7 @@ export function useGameState() {
   }, []);
 
   const checkWin = useCallback(() => {
-    return isDescendingOrder(arrangement);
+    return isAscendingOrder(arrangement);
   }, [arrangement]);
 
   const nextLevel = useCallback(() => {

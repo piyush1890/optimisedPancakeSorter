@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { Star, Lock } from "lucide-react";
+import { Star, Lock, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { levels } from "@/lib/levels";
@@ -19,9 +19,19 @@ export function LevelSelect({ currentLevel, totalStars, levelStars }: LevelSelec
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold text-white">Select Level</h1>
-          <div className="flex items-center gap-2">
-            <Star className="w-6 h-6 text-yellow-400 fill-current" />
-            <span className="text-xl text-white/90">{totalStars}</span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Star className="w-6 h-6 text-yellow-400 fill-current" />
+              <span className="text-xl text-white/90">{totalStars}</span>
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              className="text-white bg-white/10 hover:bg-white/20 border-white/20"
+              onClick={() => navigate("/game/1")}
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 

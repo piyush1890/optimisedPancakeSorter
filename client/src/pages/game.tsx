@@ -58,7 +58,7 @@ export default function Game() {
         // Delay showing the completion dialog to allow for victory animation
         setTimeout(() => {
           setShowComplete(true);
-        }, 5000); // 5 second delay
+        }, 2000); // Reduced delay to 2 seconds for better UX
       }
     };
 
@@ -71,6 +71,7 @@ export default function Game() {
   const handleLevelComplete = () => {
     setShowComplete(false);
     setIsVictory(false);
+    // Call nextLevel which will update stars and progress
     nextLevel();
   };
 

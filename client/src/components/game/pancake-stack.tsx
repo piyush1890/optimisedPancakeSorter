@@ -207,7 +207,6 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating,
       // Create a bouncy victory animation
       const tl = gsap.timeline({
         onComplete: () => setIsAnimating(false),
-        repeat: 2
       });
 
       pancakesRef.current.forEach((pancake, i) => {
@@ -225,7 +224,8 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating,
           duration: 0.5,
           ease: "power2.out",
           yoyo: true,
-          repeat: 3
+          repeat: -1, // Infinite repeat
+          repeatDelay: Math.random() * 0.3 // Add slight random delay between repeats
         }, randomDelay);
 
         // Add a subtle wobble effect
@@ -235,19 +235,19 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating,
           duration: 1,
           ease: "elastic.out(1, 0.3)",
           yoyo: true,
-          repeat: 1
+          repeat: -1
         }, randomDelay);
       });
 
-      // Add a final group bounce
-      tl.to(pancakesRef.current.map(p => p.position), {
-        y: "+=0.5",
-        duration: 0.3,
-        stagger: 0.05,
-        ease: "power2.out",
-        yoyo: true,
-        repeat: 1
-      }, "+=0.5");
+      // Add spacing animation to the stack
+      pancakesRef.current.forEach((pancake, i) => {
+        const baseY = i * 0.6; // Original Y position
+        gsap.to(pancake.position, {
+          y: baseY * 1.5, // Increase spacing by 50%
+          duration: 0.5,
+          ease: "power2.out"
+        });
+      });
     }
   }, [isVictory, isAnimating, setIsAnimating]);
 

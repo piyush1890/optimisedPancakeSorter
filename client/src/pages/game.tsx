@@ -9,11 +9,19 @@ export default function Game() {
   const [showComplete, setShowComplete] = useState(false);
   const { currentLevel, moves, arrangement, level, flipStack, checkWin, nextLevel, stars } = useGameState();
 
+  // Check win condition whenever arrangement changes and animation is complete
   useEffect(() => {
-    if (checkWin() && !isAnimating && !showComplete) {
-      setShowComplete(true);
+    const checkWinCondition = () => {
+      if (checkWin() && !isAnimating && !showComplete) {
+        setShowComplete(true);
+      }
+    };
+
+    // Only check win condition if we're not currently animating
+    if (!isAnimating) {
+      checkWinCondition();
     }
-  }, [arrangement, checkWin, isAnimating]);
+  }, [arrangement, checkWin, isAnimating, showComplete]);
 
   const handleLevelComplete = () => {
     setShowComplete(false);

@@ -195,7 +195,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     setIsAnimating(true);
 
     const stackHeight = 0.6;
-    const liftHeight = 2;
+    const liftHeight = 3;
 
     const flipGroup = new THREE.Group();
     const pancakesToFlip = pancakesRef.current.slice(index);

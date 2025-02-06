@@ -59,91 +59,79 @@ export class SoundEffect {
     const compressor = this.audioContext!.createDynamicsCompressor();
     compressor.connect(this.gainNode!);
 
-    // Bass drum
-    this.createKick(now, compressor);
-    this.createKick(now + 0.5, compressor);
-    this.createKick(now + 1.0, compressor);
-    this.createKick(now + 1.5, compressor);
+    // Drum roll effect
+    const drumRollDuration = 1.5; // Duration of drum roll before crash
+    const startingTempo = 5; // Hits per second at start
+    const endingTempo = 20; // Hits per second at end
 
-    // Bass line
-    this.createBassLine(now, duration, compressor);
+    // Calculate number of hits needed
+    const totalHits = Math.floor((startingTempo + endingTempo) * drumRollDuration / 2);
 
-    // Lead synth
-    this.createLeadSynth(now, duration, compressor);
+    for (let i = 0; i < totalHits; i++) {
+      const progress = i / totalHits;
+      const currentTempo = startingTempo + (endingTempo - startingTempo) * progress;
+      const hitTime = now + (progress * drumRollDuration);
+
+      this.createDrumHit(hitTime, 0.1 + progress * 0.4, compressor);
+    }
+
+    // Final crash cymbal
+    this.createCrashCymbal(now + drumRollDuration, compressor);
 
     console.log('Victory sound started');
   }
 
-  private createKick(startTime: number, destination: AudioNode) {
+  private createDrumHit(startTime: number, volume: number, destination: AudioNode) {
     const osc = this.audioContext!.createOscillator();
     const gainNode = this.audioContext!.createGain();
 
     osc.connect(gainNode);
     gainNode.connect(destination);
 
-    osc.frequency.setValueAtTime(150, startTime);
-    osc.frequency.exponentialRampToValueAtTime(0.01, startTime + 0.2);
+    // Snare-like sound
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(200, startTime);
+    osc.frequency.exponentialRampToValueAtTime(100, startTime + 0.05);
 
-    gainNode.gain.setValueAtTime(1, startTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.2);
+    gainNode.gain.setValueAtTime(volume, startTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.05);
 
     osc.start(startTime);
-    osc.stop(startTime + 0.2);
+    osc.stop(startTime + 0.05);
   }
 
-  private createBassLine(startTime: number, duration: number, destination: AudioNode) {
-    const osc = this.audioContext!.createOscillator();
-    const gainNode = this.audioContext!.createGain();
-    const filter = this.audioContext!.createBiquadFilter();
+  private createCrashCymbal(startTime: number, destination: AudioNode) {
+    // Create noise for cymbal
+    const bufferSize = this.audioContext!.sampleRate * 2;
+    const buffer = this.audioContext!.createBuffer(1, bufferSize, this.audioContext!.sampleRate);
+    const data = buffer.getChannelData(0);
 
-    osc.connect(filter);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+
+    const noise = this.audioContext!.createBufferSource();
+    noise.buffer = buffer;
+
+    // Create filter for cymbal sound
+    const filter = this.audioContext!.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 5000;
+
+    // Create gain node for envelope
+    const gainNode = this.audioContext!.createGain();
+
+    // Connect nodes
+    noise.connect(filter);
     filter.connect(gainNode);
     gainNode.connect(destination);
 
-    // Bass line settings
-    osc.type = 'sawtooth';
-    filter.type = 'lowpass';
-    filter.frequency.value = 500;
-    filter.Q.value = 10;
+    // Set envelope
+    gainNode.gain.setValueAtTime(0.8, startTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 1.0);
 
-    // Bass pattern
-    const bassNotes = [60, 62, 64, 65]; // Bass note frequencies
-    const noteTime = duration / bassNotes.length;
-
-    bassNotes.forEach((note, i) => {
-      const noteStart = startTime + (i * noteTime);
-      osc.frequency.setValueAtTime(220 * Math.pow(2, (note - 69) / 12), noteStart);
-      gainNode.gain.setValueAtTime(0.5, noteStart);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, noteStart + noteTime * 0.9);
-    });
-
-    osc.start(startTime);
-    osc.stop(startTime + duration);
-  }
-
-  private createLeadSynth(startTime: number, duration: number, destination: AudioNode) {
-    const osc = this.audioContext!.createOscillator();
-    const gainNode = this.audioContext!.createGain();
-
-    osc.connect(gainNode);
-    gainNode.connect(destination);
-
-    // Lead synth settings
-    osc.type = 'square';
-
-    // Lead pattern
-    const leadNotes = [72, 74, 76, 77]; // Lead note frequencies
-    const noteTime = duration / leadNotes.length;
-
-    leadNotes.forEach((note, i) => {
-      const noteStart = startTime + (i * noteTime);
-      osc.frequency.setValueAtTime(440 * Math.pow(2, (note - 69) / 12), noteStart);
-      gainNode.gain.setValueAtTime(0.2, noteStart);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, noteStart + noteTime * 0.8);
-    });
-
-    osc.start(startTime);
-    osc.stop(startTime + duration);
+    noise.start(startTime);
+    noise.stop(startTime + 1.0);
   }
 }
 

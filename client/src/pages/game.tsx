@@ -7,12 +7,14 @@ import { Progress } from "@/components/ui/progress";
 export default function Game() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showComplete, setShowComplete] = useState(false);
+  const [isVictory, setIsVictory] = useState(false);
   const { currentLevel, moves, arrangement, level, flipStack, checkWin, nextLevel, stars } = useGameState();
 
   // Check win condition whenever arrangement changes and animation is complete
   useEffect(() => {
     const checkWinCondition = () => {
       if (checkWin() && !isAnimating && !showComplete) {
+        setIsVictory(true);
         setShowComplete(true);
       }
     };
@@ -25,6 +27,7 @@ export default function Game() {
 
   const handleLevelComplete = () => {
     setShowComplete(false);
+    setIsVictory(false);
     nextLevel();
   };
 
@@ -47,6 +50,7 @@ export default function Game() {
         onFlip={flipStack}
         isAnimating={isAnimating}
         setIsAnimating={setIsAnimating}
+        isVictory={isVictory}
       />
 
       {/* Level Complete Dialog */}

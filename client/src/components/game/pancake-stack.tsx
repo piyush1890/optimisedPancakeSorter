@@ -8,9 +8,10 @@ interface PancakeStackProps {
   onFlip: (index: number) => void;
   isAnimating: boolean;
   setIsAnimating: (value: boolean) => void;
+  isVictory?: boolean;  // New prop for victory state
 }
 
-export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating }: PancakeStackProps) {
+export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating, isVictory = false }: PancakeStackProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene>();
   const cameraRef = useRef<THREE.PerspectiveCamera>();
@@ -196,6 +197,39 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     containerRef.current.addEventListener('click', handleClick);
     return () => containerRef.current?.removeEventListener('click', handleClick);
   }, [isAnimating]);
+
+  // Add victory dance animation
+  useEffect(() => {
+    if (isVictory && groupRef.current && !isAnimating) {
+      setIsAnimating(true);
+      soundEffect.playVictory();
+
+      // Create a bouncy victory animation
+      const tl = gsap.timeline({
+        onComplete: () => setIsAnimating(false),
+        repeat: 2
+      });
+
+      pancakesRef.current.forEach((pancake, i) => {
+        // Bounce and spin animation
+        tl.to(pancake.position, {
+          y: `+=${1 + Math.sin(i) * 0.5}`,
+          duration: 0.3,
+          ease: "power2.out",
+          yoyo: true,
+          repeat: 1
+        }, i * 0.1);
+
+        // Rotation animation
+        tl.to(pancake.rotation, {
+          z: Math.PI * 2,
+          duration: 0.6,
+          ease: "power1.inOut"
+        }, i * 0.1);
+      });
+    }
+  }, [isVictory, isAnimating, setIsAnimating]);
+
 
   const flipPancakes = (index: number) => {
     if (isAnimating || !groupRef.current) return;

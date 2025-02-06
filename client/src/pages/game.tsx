@@ -25,6 +25,7 @@ export default function Game() {
 
   const handleLevelComplete = () => {
     setShowComplete(false);
+    setIsAnimating(true); // Start animation phase
     nextLevel();
   };
 

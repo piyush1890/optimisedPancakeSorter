@@ -17,19 +17,18 @@ export function DrummerModel({ isPlaying, onAnimationComplete }: DrummerModelPro
 
     // Scene setup
     const scene = new THREE.Scene();
-    const bgColor = new THREE.Color(0x000000);
-    scene.background = bgColor;
-    scene.fog = null; // This will ensure full transparency
+    scene.background = null; // Make background fully transparent
 
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ 
       alpha: true,
       antialias: true 
     });
+    renderer.setClearColor(0x000000, 0); // Set clear color with 0 alpha
     renderer.setSize(window.innerWidth / 2.5, window.innerHeight / 2.5);
     containerRef.current.appendChild(renderer.domElement);
 
-    // Lighting
+    // Lighting setup remains the same
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
 
@@ -161,16 +160,24 @@ export function DrummerModel({ isPlaying, onAnimationComplete }: DrummerModelPro
     if (!drummerRef.current) return;
 
     if (isPlaying) {
-      // Fade in
+      // Fade in quickly
       gsap.to(materialRef.current.map(m => m), {
         opacity: 1,
-        duration: 0.5,
-        stagger: 0.1
+        duration: 0.3,
+        stagger: 0.05
       });
 
       // Drumming animation
       const tl = gsap.timeline({
-        onComplete: onAnimationComplete,
+        onComplete: () => {
+          // Start fade out after drumming is complete
+          gsap.to(materialRef.current.map(m => m), {
+            opacity: 0,
+            duration: 1,
+            stagger: 0.05,
+            onComplete: onAnimationComplete
+          });
+        }
       });
 
       // Starting tempo (matches the sound's drumroll)
@@ -208,11 +215,12 @@ export function DrummerModel({ isPlaying, onAnimationComplete }: DrummerModelPro
         });
       }
     } else {
-      // Fade out
+      // Quick fade out if stopped manually
       gsap.to(materialRef.current.map(m => m), {
         opacity: 0,
-        duration: 0.5,
-        stagger: 0.1
+        duration: 0.3,
+        stagger: 0.05,
+        onComplete: onAnimationComplete
       });
     }
   }, [isPlaying, onAnimationComplete]);
@@ -225,8 +233,8 @@ export function DrummerModel({ isPlaying, onAnimationComplete }: DrummerModelPro
         width: '40vw', 
         height: '40vh',
         pointerEvents: 'none',
-        opacity: isPlaying ? 1 : 0,
-        transition: 'opacity 0.5s ease-in-out'
+        mixBlendMode: 'normal',
+        background: 'transparent'
       }}
     />
   );

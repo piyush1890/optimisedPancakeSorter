@@ -5,10 +5,9 @@ import { useToast } from "@/hooks/use-toast";
 export function useGameState() {
   const [currentLevel, setCurrentLevel] = useState(1);
   const [moves, setMoves] = useState(0);
-  const [arrangement, setArrangement] = useState(levels[0].arrangement);
-  const { toast } = useToast();
-
   const level = levels.find(l => l.id === currentLevel);
+  const [arrangement, setArrangement] = useState(level?.arrangement || []);
+  const { toast } = useToast();
 
   const flipStack = useCallback((index: number) => {
     setMoves(m => m + 1);
@@ -25,7 +24,7 @@ export function useGameState() {
   }, [arrangement]);
 
   const nextLevel = useCallback(() => {
-    const nextLevelData = levels[currentLevel];
+    const nextLevelData = levels.find(l => l.id === currentLevel + 1);
     if (nextLevelData) {
       setCurrentLevel(l => l + 1);
       setArrangement(nextLevelData.arrangement);

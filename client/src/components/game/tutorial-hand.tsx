@@ -33,7 +33,7 @@ export const TutorialHand: FC<TutorialHandProps> = ({ onClick, positions }) => {
       onAnimationComplete={onClick}
     >
       <div className="relative">
-        <MousePointer className="w-8 h-8 text-white drop-shadow-lg" />
+        <MousePointer className="w-16 h-16 text-white drop-shadow-lg" />
         <motion.div
           className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full"
           animate={{

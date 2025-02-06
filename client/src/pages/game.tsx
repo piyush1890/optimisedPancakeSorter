@@ -37,22 +37,35 @@ export default function Game() {
 
   // Calculate tutorial hand positions based on level
   const calculateTutorialPositions = useCallback(() => {
-    const gameArea = document.querySelector('.game-area');
-    if (!gameArea) return;
+    if (!currentLevel) return;
 
-    const rect = gameArea.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
+    // Use window dimensions for better positioning
+    const windowHeight = window.innerHeight;
+    const windowWidth = window.innerWidth;
+
+    // Calculate center position
+    const centerX = windowWidth / 2;
+    const centerY = windowHeight / 2;
 
     if (currentLevel === 1) {
       // For level 1, show a simple flip at position 2
       setTutorialPositions([
-        { x: centerX, y: rect.top + rect.height / 2 }
+        { 
+          x: centerX,
+          y: centerY + 50 // Offset down slightly to point at pancakes
+        }
       ]);
     } else if (currentLevel === 2) {
       // For level 2, show a sequence of two flips
       setTutorialPositions([
-        { x: centerX, y: rect.top + rect.height / 2 - 50 },
-        { x: centerX, y: rect.top + rect.height / 2 + 50 }
+        { 
+          x: centerX,
+          y: centerY - 50 // First flip position
+        },
+        { 
+          x: centerX,
+          y: centerY + 100 // Second flip position
+        }
       ]);
     }
   }, [currentLevel]);
@@ -61,11 +74,14 @@ export default function Game() {
   useEffect(() => {
     if ((currentLevel === 1 && !tutorialState.level1Completed) ||
         (currentLevel === 2 && !tutorialState.level2Completed)) {
+      // Add a longer delay to ensure game area is mounted
       const timer = setTimeout(() => {
         setShowTutorial(true);
         calculateTutorialPositions();
-      }, 1000);
+      }, 1500); // Increased delay
       return () => clearTimeout(timer);
+    } else {
+      setShowTutorial(false);
     }
   }, [currentLevel, tutorialState, calculateTutorialPositions]);
 

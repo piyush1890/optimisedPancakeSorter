@@ -70,9 +70,9 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
         size * 2, // width
         0.5, // height
         2, // depth
-        4, // widthSegments - for smoother edges
-        2, // heightSegments
-        4  // depthSegments
+        8, // widthSegments - increased for rounder edges
+        4, // heightSegments - increased for smoother corners
+        8  // depthSegments - increased for rounder edges
       );
       const material = new THREE.MeshStandardMaterial({
         color: new THREE.Color(`hsl(${size * 40}, 70%, 50%)`),

@@ -47,18 +47,18 @@ export default function Game() {
     if (currentLevel === 1) {
       setTutorialPositions([
         { 
-          x: centerX,
-          y: centerY + 100  // Adjusted position for better visibility
+          x: centerX - 100, 
+          y: centerY  // Point directly at a mid-height pancake
         }
       ]);
     } else if (currentLevel === 2) {
       setTutorialPositions([
         { 
-          x: centerX,
+          x: centerX - 100,
           y: centerY - 50 
         },
         { 
-          x: centerX,
+          x: centerX - 100,
           y: centerY + 100 
         }
       ]);
@@ -68,7 +68,6 @@ export default function Game() {
   useEffect(() => {
     if ((currentLevel === 1 && !tutorialState.level1Completed) ||
         (currentLevel === 2 && !tutorialState.level2Completed)) {
-      // Add delay before showing tutorial to ensure game is ready
       const timer = setTimeout(() => {
         setShowTutorial(true);
         calculateTutorialPositions();
@@ -129,7 +128,7 @@ export default function Game() {
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-blue-600 via-primary/40 to-indigo-400">
       {showTutorial && tutorialPositions.length > 0 && (
-        <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 9999 }}>
+        <div className="fixed inset-0" style={{ zIndex: 9999 }}>
           <TutorialHand
             positions={tutorialPositions}
             onClick={handleTutorialComplete}

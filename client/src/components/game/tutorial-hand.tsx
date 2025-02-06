@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { type FC } from "react";
-import { Hand } from "lucide-react";
+import { MousePointer } from "lucide-react";
 
 interface TutorialHandProps {
   onClick: () => void;
@@ -25,19 +25,15 @@ export const TutorialHand: FC<TutorialHandProps> = ({ onClick, positions }) => {
       }}
       transition={{
         duration: 2,
-        repeat: 2,
+        repeat: Infinity,
         repeatType: "reverse",
         times: positions.map((_, i) => i / (positions.length - 1 || 1)),
         ease: "easeInOut",
         repeatDelay: 0.5
       }}
-      onAnimationComplete={() => {
-        // Add delay before completing tutorial
-        setTimeout(onClick, 1000);
-      }}
     >
-      <div className="relative">
-        <Hand 
+      <div className="relative cursor-pointer" onClick={onClick} style={{ pointerEvents: 'auto' }}>
+        <MousePointer 
           className="w-24 h-24 text-white drop-shadow-lg transform -rotate-45" 
           strokeWidth={1.5}
         />

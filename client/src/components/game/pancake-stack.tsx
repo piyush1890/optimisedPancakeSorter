@@ -209,6 +209,17 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating,
         onComplete: () => setIsAnimating(false),
       });
 
+      // First, smoothly increase the spacing between pancakes
+      pancakesRef.current.forEach((pancake, i) => {
+        const baseY = i * 0.6; // Original Y position
+        tl.to(pancake.position, {
+          y: baseY * 1.5, // Increase spacing by 50%
+          duration: 0.5,
+          ease: "power2.inOut"
+        }, 0); // Start all spacing animations at the same time
+      });
+
+      // Then start the continuous bouncing animations
       pancakesRef.current.forEach((pancake, i) => {
         // Random values for more varied animation
         const randomY = 1 + Math.random() * 1.5;
@@ -226,7 +237,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating,
           yoyo: true,
           repeat: -1, // Infinite repeat
           repeatDelay: Math.random() * 0.3 // Add slight random delay between repeats
-        }, randomDelay);
+        }, `>-0.3`); // Start slightly before previous animation ends for smoother transition
 
         // Add a subtle wobble effect
         tl.to(pancake.rotation, {
@@ -236,17 +247,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating,
           ease: "elastic.out(1, 0.3)",
           yoyo: true,
           repeat: -1
-        }, randomDelay);
-      });
-
-      // Add spacing animation to the stack
-      pancakesRef.current.forEach((pancake, i) => {
-        const baseY = i * 0.6; // Original Y position
-        gsap.to(pancake.position, {
-          y: baseY * 1.5, // Increase spacing by 50%
-          duration: 0.5,
-          ease: "power2.out"
-        });
+        }, `>-0.3`);
       });
     }
   }, [isVictory, isAnimating, setIsAnimating]);

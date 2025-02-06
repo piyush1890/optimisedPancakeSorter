@@ -27,16 +27,42 @@ export class SoundEffect {
   playClick() {
     if (!this.enabled || !this.initializeAudioContext()) return;
 
-    const oscillator = this.audioContext!.createOscillator();
-    oscillator.connect(this.gainNode!);
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(400, this.audioContext!.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(
-      200,
-      this.audioContext!.currentTime + 0.1
-    );
-    oscillator.start();
-    oscillator.stop(this.audioContext!.currentTime + 0.1);
+    const now = this.audioContext!.currentTime;
+    this.createQuickCrash(now, this.gainNode!);
+  }
+
+  private createQuickCrash(startTime: number, destination: AudioNode) {
+    // Create shorter noise buffer for quick crash
+    const bufferSize = this.audioContext!.sampleRate * 0.1; // 100ms buffer
+    const buffer = this.audioContext!.createBuffer(1, bufferSize, this.audioContext!.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+
+    const noise = this.audioContext!.createBufferSource();
+    noise.buffer = buffer;
+
+    // Higher frequency filter for brighter crash sound
+    const filter = this.audioContext!.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 8000; // Higher frequency for clickier sound
+
+    // Create gain node for envelope
+    const gainNode = this.audioContext!.createGain();
+
+    // Connect nodes
+    noise.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(destination);
+
+    // Quick attack and decay
+    gainNode.gain.setValueAtTime(0.3, startTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.1);
+
+    noise.start(startTime);
+    noise.stop(startTime + 0.1);
   }
 
   async playVictory() {

@@ -25,7 +25,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     scene.background = new THREE.Color(0x1a1a1a); // Dark background for better contrast
 
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ 
+    const renderer = new THREE.WebGLRenderer({
       antialias: true,
       shadowMap: {
         enabled: true,
@@ -53,7 +53,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
 
     // Add ground plane to receive shadows
     const groundGeometry = new THREE.PlaneGeometry(20, 20);
-    const groundMaterial = new THREE.MeshStandardMaterial({ 
+    const groundMaterial = new THREE.MeshStandardMaterial({
       color: 0x222222,
       roughness: 0.8,
       metalness: 0.2
@@ -66,8 +66,15 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
 
     // Create pancakes
     arrangement.forEach((size, index) => {
-      const geometry = new THREE.BoxGeometry(size * 2, 0.5, 2);
-      const material = new THREE.MeshStandardMaterial({ 
+      const geometry = new THREE.BoxGeometry(
+        size * 2, // width
+        0.5, // height
+        2, // depth
+        4, // widthSegments - for smoother edges
+        2, // heightSegments
+        4  // depthSegments
+      );
+      const material = new THREE.MeshStandardMaterial({
         color: new THREE.Color(`hsl(${size * 40}, 70%, 50%)`),
         roughness: 0.7,
         metalness: 0.3
@@ -171,7 +178,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     const pancakesToFlip = pancakesRef.current.slice(index);
 
     // Calculate the pivot point for the flip
-    const pivotY = (index + pancakesToFlip.length)/2 * stackHeight;
+    const pivotY = (index + pancakesToFlip.length) / 2 * stackHeight;
     flipGroup.position.y = pivotY;
 
     // Calculate final Y positions for each pancake (in reverse order after flip)
@@ -204,7 +211,6 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
         //sort pancakeRef by y position
         pancakesRef.current.sort((a, b) => a.position.y - b.position.y)
         // Clean up the flip group
-        console.log(pancakesRef)
         flipGroup.removeFromParent();
         setIsAnimating(false);
         onFlip(index);
@@ -217,16 +223,15 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
       duration: 0.3,
       ease: "power2.out"
     })
-    .to(flipGroup.rotation, {
-      x: Math.PI, // Flip
-      duration: 0.6,
-      ease: "power2.inOut"
-    })
-    .to(flipGroup.position, {
-      y: pivotY, // Drop back
-      duration: 0.3,
-      //ease: "bounce.out"
-    });
+      .to(flipGroup.rotation, {
+        x: Math.PI, // Flip
+        duration: 0.6,
+        ease: "power2.inOut"
+      })
+      .to(flipGroup.position, {
+        y: pivotY, // Drop back
+        duration: 0.3
+      });
   };
 
   return <div ref={containerRef} className="w-full h-screen" />;

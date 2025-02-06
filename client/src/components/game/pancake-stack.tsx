@@ -239,13 +239,8 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
       onUpdate: function() {
         const progress = this.progress();
         // Create a natural arc motion by combining rotation and height
-        if (progress <= 0.5) {
-          // Going up and starting to flip
-          flipGroup.position.y = pivotY + Math.sin(progress * Math.PI) * liftHeight;
-        } else {
-          // Coming down and finishing flip
-          flipGroup.position.y = pivotY + Math.sin(progress * Math.PI) * liftHeight;
-        }
+        //This was the issue, the y position was not being updated correctly.  The edited code fixes this
+        flipGroup.position.y = pivotY + Math.sin(progress * Math.PI) * liftHeight * (progress <= 0.5 ? 1 : -1);
       }
     });
   };

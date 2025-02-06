@@ -10,7 +10,10 @@ const TUTORIAL_STORAGE_KEY = 'pancakeGameTutorial';
 const getInitialState = (): TutorialState => {
   try {
     const saved = localStorage.getItem(TUTORIAL_STORAGE_KEY);
-    return saved ? JSON.parse(saved) : { level1Completed: false, level2Completed: false };
+    if (saved) {
+      localStorage.removeItem(TUTORIAL_STORAGE_KEY); // Reset tutorial state for testing
+    }
+    return { level1Completed: false, level2Completed: false };
   } catch {
     return { level1Completed: false, level2Completed: false };
   }

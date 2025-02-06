@@ -16,7 +16,7 @@ export const TutorialHand: FC<TutorialHandProps> = ({ onClick, positions }) => {
 
   return (
     <motion.div
-      className="fixed pointer-events-none z-50"
+      className="fixed pointer-events-none z-[100]"
       initial={{ scale: 0, opacity: 0 }}
       animate={{
         scale: 1,

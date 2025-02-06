@@ -76,24 +76,20 @@ export default function Game() {
 
   // Show tutorial for levels 1 and 2 if not completed
   useEffect(() => {
-    console.log('Tutorial effect running:', {
+    console.log('Tutorial state check:', {
       currentLevel,
-      level1Completed: tutorialState.level1Completed,
-      level2Completed: tutorialState.level2Completed,
-      showTutorial
+      tutorialState,
+      showTutorial,
+      positions: tutorialPositions
     });
 
     if ((currentLevel === 1 && !tutorialState.level1Completed) ||
         (currentLevel === 2 && !tutorialState.level2Completed)) {
-      console.log('Should show tutorial');
-      // Add a longer delay to ensure game area is mounted
-      const timer = setTimeout(() => {
-        setShowTutorial(true);
-        calculateTutorialPositions();
-      }, 1500); // Increased delay
-      return () => clearTimeout(timer);
+      console.log('Showing tutorial for level:', currentLevel);
+      setShowTutorial(true);
+      calculateTutorialPositions();
     } else {
-      console.log('Should hide tutorial');
+      console.log('Hiding tutorial');
       setShowTutorial(false);
     }
   }, [currentLevel, tutorialState, calculateTutorialPositions]);
@@ -150,6 +146,11 @@ export default function Game() {
     navigate(`/game/${nextLevelNumber}`);
   };
 
+  console.log('Tutorial render check:', {
+    showTutorial,
+    hasTutorialPositions: tutorialPositions.length > 0
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-primary/40 to-indigo-400">
       {/* HUD */}
@@ -201,15 +202,15 @@ export default function Game() {
           setIsAnimating={setIsAnimating}
           isVictory={isVictory}
         />
-      </div>
 
-      {/* Tutorial Hand */}
-      {showTutorial && tutorialPositions.length > 0 && (
-        <TutorialHand
-          positions={tutorialPositions}
-          onClick={handleTutorialComplete}
-        />
-      )}
+        {/* Tutorial Hand - Moved inside game-area for better positioning */}
+        {showTutorial && tutorialPositions.length > 0 && (
+          <TutorialHand
+            positions={tutorialPositions}
+            onClick={handleTutorialComplete}
+          />
+        )}
+      </div>
 
       {/* Level Complete Dialog */}
       <LevelComplete

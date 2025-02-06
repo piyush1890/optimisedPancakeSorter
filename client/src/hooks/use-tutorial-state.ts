@@ -8,15 +8,9 @@ interface TutorialState {
 const TUTORIAL_STORAGE_KEY = 'pancakeGameTutorial';
 
 const getInitialState = (): TutorialState => {
-  try {
-    const saved = localStorage.getItem(TUTORIAL_STORAGE_KEY);
-    if (saved) {
-      localStorage.removeItem(TUTORIAL_STORAGE_KEY); // Reset tutorial state for testing
-    }
-    return { level1Completed: false, level2Completed: false };
-  } catch {
-    return { level1Completed: false, level2Completed: false };
-  }
+  // Always start with uncompleted tutorial state
+  localStorage.removeItem(TUTORIAL_STORAGE_KEY);
+  return { level1Completed: false, level2Completed: false };
 };
 
 export function useTutorialState() {
@@ -27,6 +21,7 @@ export function useTutorialState() {
   }, [tutorialState]);
 
   const completeTutorial = (level: 1 | 2) => {
+    console.log('Completing tutorial for level:', level);
     setTutorialState(prev => ({
       ...prev,
       [`level${level}Completed`]: true

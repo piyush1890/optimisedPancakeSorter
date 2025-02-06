@@ -7,15 +7,17 @@ interface PancakeStackProps {
   onFlip: (index: number) => void;
   isAnimating: boolean;
   setIsAnimating: (value: boolean) => void;
+  onWin?: () => void;
 }
 
-export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating }: PancakeStackProps) {
+export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating, onWin }: PancakeStackProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene>();
   const cameraRef = useRef<THREE.PerspectiveCamera>();
   const rendererRef = useRef<THREE.WebGLRenderer>();
   const pancakesRef = useRef<THREE.Mesh[]>([]);
   const groupRef = useRef<THREE.Group>();
+  const isExploding = useRef(false);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -182,7 +184,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
 
       if (intersects.length > 0) {
         const clickedIndex = pancakesRef.current.indexOf(intersects[0].object as THREE.Mesh);
-        flipPancakes(clickedIndex);
+        flipStack(clickedIndex);
       }
     }
 
@@ -190,7 +192,49 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     return () => containerRef.current?.removeEventListener('click', handleClick);
   }, [isAnimating]);
 
-  const flipPancakes = (index: number) => {
+  const explodePancakes = () => {
+    if (!groupRef.current || isExploding.current) return;
+    isExploding.current = true;
+    setIsAnimating(true);
+
+    const explosionTimeline = gsap.timeline({
+      onComplete: () => {
+        setIsAnimating(false);
+        onWin?.();
+      }
+    });
+
+    pancakesRef.current.forEach((pancake, index) => {
+      const angle = (Math.PI * 2 * index) / pancakesRef.current.length;
+      const radius = 5;
+      const targetX = Math.cos(angle) * radius;
+      const targetZ = Math.sin(angle) * radius;
+
+      explosionTimeline.to(pancake.position, {
+        x: targetX,
+        y: `+=${3 + Math.random() * 2}`,
+        z: targetZ,
+        duration: 0.8,
+        ease: "power2.out"
+      }, 0);
+
+      explosionTimeline.to(pancake.rotation, {
+        x: Math.PI * (2 + Math.random() * 3),
+        y: Math.PI * (2 + Math.random() * 3),
+        z: Math.PI * (2 + Math.random() * 3),
+        duration: 0.8,
+        ease: "power2.out"
+      }, 0);
+
+      explosionTimeline.to(pancake.material, {
+        opacity: 0,
+        duration: 0.3,
+        ease: "power2.in"
+      }, 0.5);
+    });
+  };
+
+  const flipStack = (index: number) => {
     if (isAnimating || !groupRef.current) return;
     setIsAnimating(true);
 
@@ -198,7 +242,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
     const liftHeight = 2;
 
     const flipGroup = new THREE.Group();
-    const pancakesToFlip = pancakesRef.current.slice(index);
+    const pancakesToFlip = pancakesRef.current.slice(0, index + 1);
 
     const pivotY = (index + pancakesToFlip.length) / 2 * stackHeight;
     flipGroup.position.y = pivotY;
@@ -229,6 +273,17 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating 
         flipGroup.removeFromParent();
         setIsAnimating(false);
         onFlip(index);
+
+        // Check if pancakes are in ascending order to trigger explosion
+        const heights = pancakesRef.current.map(pancake => {
+          const box = new THREE.Box3().setFromObject(pancake);
+          return box.max.x - box.min.x;
+        });
+
+        const isAscending = heights.every((h, i) => i === 0 || heights[i - 1] <= h);
+        if (isAscending) {
+          explodePancakes();
+        }
       }
     });
 

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useGameState } from "@/hooks/use-game-state";
 import { PancakeStack } from "@/components/game/pancake-stack";
 import { LevelComplete } from "@/components/game/level-complete";
-import { DrummerModel } from "@/components/game/drummer-model";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Volume2, VolumeX } from "lucide-react";
@@ -12,7 +11,6 @@ export default function Game() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showComplete, setShowComplete] = useState(false);
   const [isVictory, setIsVictory] = useState(false);
-  const [isDrumming, setIsDrumming] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const { currentLevel, moves, arrangement, level, flipStack, checkWin, nextLevel, stars } = useGameState();
 
@@ -21,7 +19,6 @@ export default function Game() {
     setIsAnimating(false);
     setIsVictory(false);
     setShowComplete(false);
-    setIsDrumming(false);
   }, [currentLevel]);
 
   // Update sound effect state when toggle changes
@@ -34,7 +31,6 @@ export default function Game() {
     const checkWinCondition = () => {
       if (checkWin() && !isAnimating && !showComplete && !isVictory) {
         setIsVictory(true);
-        setIsDrumming(true);
         // Delay showing the completion dialog to allow for victory animation
         setTimeout(() => {
           setShowComplete(true);
@@ -51,7 +47,6 @@ export default function Game() {
   const handleLevelComplete = () => {
     setShowComplete(false);
     setIsVictory(false);
-    setIsDrumming(false);
     nextLevel();
   };
 
@@ -89,12 +84,6 @@ export default function Game() {
         isAnimating={isAnimating}
         setIsAnimating={setIsAnimating}
         isVictory={isVictory}
-      />
-
-      {/* Victory Drummer */}
-      <DrummerModel
-        isPlaying={isDrumming}
-        onAnimationComplete={() => setIsDrumming(false)}
       />
 
       {/* Level Complete Dialog */}

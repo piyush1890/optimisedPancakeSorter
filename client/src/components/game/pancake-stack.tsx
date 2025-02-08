@@ -181,22 +181,30 @@ export function PancakeStack({
       if (targetIndex !== undefined && index === targetIndex) {
         const geometry = pancake.geometry as THREE.ExtrudeGeometry;
 
-        // Create positions for just the front face edges
-        const width = size * 2;
-        const height = 0.4; // This is the extrude depth
+        // Create a custom geometry for front edges only
         const positions = [];
+        const vertices = [];
 
-        // Top edge
-        positions.push(-width/2, height/2, depth/2, width/2, height/2, depth/2);
+        // Get the front face vertices
+        geometry.getAttribute('position').array.forEach((value, i) => {
+          if (i % 3 === 0) {
+            vertices.push([
+              geometry.getAttribute('position').array[i],
+              geometry.getAttribute('position').array[i + 1],
+              geometry.getAttribute('position').array[i + 2]
+            ]);
+          }
+        });
 
-        // Right edge
-        positions.push(width/2, height/2, depth/2, width/2, -height/2, depth/2);
-
-        // Bottom edge
-        positions.push(width/2, -height/2, depth/2, -width/2, -height/2, depth/2);
-
-        // Left edge
-        positions.push(-width/2, -height/2, depth/2, -width/2, height/2, depth/2);
+        // Create edges for the front face only (y > 0)
+        vertices.forEach((vertex, i) => {
+          if (vertex[1] > 0) { // Only consider vertices on the front face
+            const nextVertex = vertices[(i + 1) % vertices.length];
+            if (nextVertex[1] > 0) { // If next vertex is also on front face
+              positions.push(...vertex, ...nextVertex);
+            }
+          }
+        });
 
         const edgesGeometry = new THREE.BufferGeometry();
         edgesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));

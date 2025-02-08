@@ -183,28 +183,46 @@ export function PancakeStack({
 
         // Create a custom geometry for front edges only
         const positions = [];
-        const vertices = [];
+        const vertices = geometry.getAttribute('position');
+        const vertexCount = vertices.count;
 
-        // Get the front face vertices
-        geometry.getAttribute('position').array.forEach((value, i) => {
-          if (i % 3 === 0) {
-            vertices.push([
-              geometry.getAttribute('position').array[i],
-              geometry.getAttribute('position').array[i + 1],
-              geometry.getAttribute('position').array[i + 2]
-            ]);
+        // Find the maximum Y value to identify front face vertices
+        let maxY = -Infinity;
+        for (let i = 0; i < vertexCount; i++) {
+          const y = vertices.getY(i);
+          if (y > maxY) maxY = y;
+        }
+
+        // Collect front face vertices (those with max Y value)
+        const frontVertices = [];
+        for (let i = 0; i < vertexCount; i++) {
+          if (Math.abs(vertices.getY(i) - maxY) < 0.01) { // Use small epsilon for floating point comparison
+            frontVertices.push({
+              x: vertices.getX(i),
+              y: vertices.getY(i),
+              z: vertices.getZ(i),
+              index: i
+            });
           }
+        }
+
+        // Sort vertices to ensure we connect them in the right order (clockwise)
+        frontVertices.sort((a, b) => {
+          // First sort by X coordinate
+          if (Math.abs(a.x - b.x) > 0.01) return a.x - b.x;
+          // If X is same, sort by Z
+          return a.z - b.z;
         });
 
-        // Create edges for the front face only (y > 0)
-        vertices.forEach((vertex, i) => {
-          if (vertex[1] > 0) { // Only consider vertices on the front face
-            const nextVertex = vertices[(i + 1) % vertices.length];
-            if (nextVertex[1] > 0) { // If next vertex is also on front face
-              positions.push(...vertex, ...nextVertex);
-            }
-          }
-        });
+        // Connect adjacent vertices to form the front face outline
+        for (let i = 0; i < frontVertices.length; i++) {
+          const current = frontVertices[i];
+          const next = frontVertices[(i + 1) % frontVertices.length];
+          positions.push(
+            current.x, current.y, current.z,
+            next.x, next.y, next.z
+          );
+        }
 
         const edgesGeometry = new THREE.BufferGeometry();
         edgesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));

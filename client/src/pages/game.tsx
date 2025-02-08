@@ -10,9 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Volume2, VolumeX, Star, ChevronLeft } from "lucide-react";
 import { soundEffect } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
-
-// Level 1 guide sequence
-const LEVEL_1_SEQUENCE = [4, 3, 2, 1, 3, 1];
+import { levelSequences } from "@/lib/levels";
 
 export default function Game() {
   const [isAnimating, setIsAnimating] = useState(false);
@@ -71,9 +69,11 @@ export default function Game() {
   }, [arrangement, checkWin, isAnimating, showComplete, isVictory]);
 
   const handleFlip = (index: number) => {
-    // For level 1, check if the flip matches the guide sequence
-    if (currentLevel === 1 && !isAnimating && !isVictory) {
-      const targetIndex = LEVEL_1_SEQUENCE[guideIndex] - 1; // Convert 1-based to 0-based
+    // Get the sequence for current level if it exists
+    const sequence = levelSequences[currentLevel];
+
+    if (sequence && !isAnimating && !isVictory) {
+      const targetIndex = sequence[guideIndex] - 1; // Convert 1-based to 0-based
       if (index === targetIndex) {
         flipStack(index);
         setGuideIndex(prev => prev + 1);
@@ -90,19 +90,24 @@ export default function Game() {
     navigate(`/game/${currentLevel + 1}`);
   };
 
-  // Show guide hand only for level 1 and if not completed
-  const showGuide = currentLevel === 1 && !tutorialState.level1Completed && guideIndex < LEVEL_1_SEQUENCE.length;
+  // Get current sequence for this level
+  const currentSequence = levelSequences[currentLevel];
+
+  // Show guide only if level has a sequence and it's not completed
+  const showGuide = currentSequence && 
+    !tutorialState[`level${currentLevel}Completed`] && 
+    guideIndex < currentSequence.length;
 
   // Get current target index for highlighting
-  const currentTargetIndex = currentLevel === 1 && guideIndex < LEVEL_1_SEQUENCE.length 
-    ? LEVEL_1_SEQUENCE[guideIndex] - 1 
+  const currentTargetIndex = showGuide 
+    ? currentSequence[guideIndex] - 1 
     : undefined;
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-blue-600 via-primary/40 to-indigo-400">
       {showGuide && (
         <GuideHand
-          sequence={LEVEL_1_SEQUENCE}
+          sequence={currentSequence}
           currentIndex={guideIndex}
           stackHeight={window.innerHeight * 0.6}
           containerHeight={window.innerHeight}

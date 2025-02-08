@@ -1,5 +1,12 @@
 import type { Level } from "@shared/schema";
 
+// Define sequences for different levels
+// Each number in sequence represents the pancake to click (1-based index)
+export const levelSequences: Record<number, number[]> = {
+  1: [4, 3, 2, 1, 3, 1], // Level 1 sequence
+  2: [3, 1, 4, 2, 5], // Level 2 sequence
+};
+
 export const levels: Level[] = [
   {
     id: 1,

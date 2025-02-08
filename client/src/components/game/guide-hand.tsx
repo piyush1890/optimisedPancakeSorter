@@ -42,7 +42,7 @@ export const GuideHand: FC<GuideHandProps> = ({ sequence, currentIndex, stackHei
         height="96" 
         viewBox="0 0 550 400" 
         className="drop-shadow-lg"
-        style={{ transform: 'rotate(-135deg)' }} // Rotate to point upward with tilt
+        style={{ transform: 'rotate(45deg)' }} // Rotate 180 degrees clockwise from -135 to 45
       >
         <symbol id="hand" viewBox="-364.275 -463.175 728.602 926.3">
           <g>

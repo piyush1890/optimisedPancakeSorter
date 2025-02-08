@@ -4,18 +4,22 @@ import { useGameState } from "@/hooks/use-game-state";
 import { useTutorialState } from "@/hooks/use-tutorial-state";
 import { PancakeStack } from "@/components/game/pancake-stack";
 import { LevelComplete } from "@/components/game/level-complete";
-import { TutorialVideo } from "@/components/game/tutorial-video";
+import { GuideHand } from "@/components/game/guide-hand";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Volume2, VolumeX, Star, ChevronLeft } from "lucide-react";
 import { soundEffect } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
 
+// Level 1 guide sequence
+const LEVEL_1_SEQUENCE = [4, 3, 2, 1, 3, 1];
+
 export default function Game() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showComplete, setShowComplete] = useState(false);
   const [isVictory, setIsVictory] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [guideIndex, setGuideIndex] = useState(0);
   const [, params] = useRoute("/game/:id");
   const [, navigate] = useLocation();
   const { tutorialState } = useTutorialState();
@@ -37,6 +41,7 @@ export default function Game() {
     if (params?.id) {
       const levelId = parseInt(params.id);
       goToLevel(levelId);
+      setGuideIndex(0); // Reset guide index when changing levels
     }
   }, [params?.id, goToLevel]);
 
@@ -65,6 +70,19 @@ export default function Game() {
     }
   }, [arrangement, checkWin, isAnimating, showComplete, isVictory]);
 
+  const handleFlip = (index: number) => {
+    // For level 1, check if the flip matches the guide sequence
+    if (currentLevel === 1 && !isAnimating) {
+      const targetIndex = LEVEL_1_SEQUENCE[guideIndex] - 1; // Convert 1-based to 0-based
+      if (index === targetIndex) {
+        flipStack(index);
+        setGuideIndex(prev => prev + 1);
+      }
+    } else {
+      flipStack(index);
+    }
+  };
+
   const handleLevelComplete = () => {
     setShowComplete(false);
     setIsVictory(false);
@@ -72,13 +90,19 @@ export default function Game() {
     navigate(`/game/${currentLevel + 1}`);
   };
 
-  // Show tutorial video for levels 1 and 2 if not completed
-  const showTutorial = (currentLevel === 1 && !tutorialState.level1Completed) || 
-                      (currentLevel === 2 && !tutorialState.level2Completed);
+  // Show guide hand only for level 1 and if not completed
+  const showGuide = currentLevel === 1 && !tutorialState.level1Completed && guideIndex < LEVEL_1_SEQUENCE.length;
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-blue-600 via-primary/40 to-indigo-400">
-      {showTutorial && <TutorialVideo level={currentLevel} />}
+      {showGuide && (
+        <GuideHand
+          sequence={LEVEL_1_SEQUENCE}
+          currentIndex={guideIndex}
+          stackHeight={window.innerHeight * 0.6} // Approximate stack height
+          containerHeight={window.innerHeight}
+        />
+      )}
 
       <div className="fixed top-0 left-0 right-0 p-4 z-10 bg-gradient-to-b from-black/20 to-transparent">
         <div className="container max-w-lg mx-auto">
@@ -122,7 +146,7 @@ export default function Game() {
       <div className="game-area">
         <PancakeStack
           arrangement={arrangement}
-          onFlip={flipStack}
+          onFlip={handleFlip}
           isAnimating={isAnimating}
           setIsAnimating={setIsAnimating}
           isVictory={isVictory}

@@ -59,7 +59,7 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating,
     });
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
     ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -0.5;
+    ground.position.y = -0.8;
     ground.receiveShadow = true;
     scene.add(ground);
 
@@ -261,8 +261,8 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating,
 
     const flipGroup = new THREE.Group();
     const pancakesToFlip = pancakesRef.current.slice(index);
-
-    const pivotY = (index + pancakesToFlip.length) / 2 * stackHeight;
+console.log(index)
+    const pivotY = (index + 1 + pancakesToFlip.length) / 2.0 * stackHeight;
     flipGroup.position.y = pivotY;
 
     const finalPositions = pancakesToFlip.map((_, i) => ({

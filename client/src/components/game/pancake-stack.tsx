@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { gsap } from "gsap";
 import { soundEffect } from "@/lib/sound";
@@ -8,16 +8,25 @@ interface PancakeStackProps {
   onFlip: (index: number) => void;
   isAnimating: boolean;
   setIsAnimating: (value: boolean) => void;
-  isVictory?: boolean;  // New prop for victory state
+  isVictory?: boolean;
+  targetIndex?: number; // New prop for highlighting target pancake
 }
 
-export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating, isVictory = false }: PancakeStackProps) {
+export function PancakeStack({ 
+  arrangement, 
+  onFlip, 
+  isAnimating, 
+  setIsAnimating, 
+  isVictory = false,
+  targetIndex 
+}: PancakeStackProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene>();
   const cameraRef = useRef<THREE.PerspectiveCamera>();
   const rendererRef = useRef<THREE.WebGLRenderer>();
   const pancakesRef = useRef<THREE.Mesh[]>([]);
   const groupRef = useRef<THREE.Group>();
+  const outlineRef = useRef<THREE.LineSegments | null>(null);
 
   // Setup scene and renderer
   useEffect(() => {
@@ -167,8 +176,44 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating,
       pancake.rotation.x = Math.PI / 2;
       groupRef.current!.add(pancake);
       pancakesRef.current.push(pancake);
+
+      // Add highlight effect if this is the target pancake
+      if (targetIndex !== undefined && index === targetIndex) {
+        const edges = new THREE.EdgesGeometry(geometry);
+        const lineMaterial = new THREE.LineBasicMaterial({ 
+          color: 0xffffff,
+          linewidth: 2,
+          transparent: true,
+          opacity: 0.8
+        });
+        const outline = new THREE.LineSegments(edges, lineMaterial);
+        outline.rotation.copy(pancake.rotation);
+        outline.position.copy(pancake.position);
+        outline.scale.multiplyScalar(1.02); // Slightly larger to avoid z-fighting
+
+        // Remove previous outline if exists
+        if (outlineRef.current) {
+          groupRef.current.remove(outlineRef.current);
+          outlineRef.current.geometry.dispose();
+          (outlineRef.current.material as THREE.Material).dispose();
+        }
+
+        groupRef.current.add(outline);
+        outlineRef.current = outline;
+
+        // Animate the outline
+        gsap.to(outline.scale, {
+          x: 1.05,
+          y: 1.05,
+          z: 1.05,
+          duration: 0.5,
+          repeat: -1,
+          yoyo: true,
+          ease: "power1.inOut"
+        });
+      }
     });
-  }, [arrangement]);
+  }, [arrangement, targetIndex]);
 
   // Handle click events
   useEffect(() => {
@@ -188,15 +233,30 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating,
       const intersects = raycaster.intersectObjects(pancakesRef.current);
 
       if (intersects.length > 0) {
-        soundEffect.playClick();
         const clickedIndex = pancakesRef.current.indexOf(intersects[0].object as THREE.Mesh);
-        flipPancakes(clickedIndex);
+
+        if (targetIndex === undefined || clickedIndex === targetIndex) {
+          soundEffect.playClick();
+          flipPancakes(clickedIndex);
+        } else {
+          // Bounce animation for wrong clicks
+          const wrongPancake = pancakesRef.current[clickedIndex];
+          const originalY = wrongPancake.position.y;
+
+          gsap.to(wrongPancake.position, {
+            y: originalY + 0.2,
+            duration: 0.1,
+            ease: "power2.out",
+            yoyo: true,
+            repeat: 1
+          });
+        }
       }
     }
 
     containerRef.current.addEventListener('click', handleClick);
     return () => containerRef.current?.removeEventListener('click', handleClick);
-  }, [isAnimating]);
+  }, [isAnimating, targetIndex]);
 
   // Add victory dance animation
   useEffect(() => {
@@ -261,7 +321,6 @@ export function PancakeStack({ arrangement, onFlip, isAnimating, setIsAnimating,
 
     const flipGroup = new THREE.Group();
     const pancakesToFlip = pancakesRef.current.slice(index);
-console.log(index)
     const pivotY = (index + 1 + pancakesToFlip.length) / 2.0 * stackHeight;
     flipGroup.position.y = pivotY;
 

@@ -72,13 +72,13 @@ export default function Game() {
 
   const handleFlip = (index: number) => {
     // For level 1, check if the flip matches the guide sequence
-    if (currentLevel === 1 && !isAnimating) {
+    if (currentLevel === 1 && !isAnimating && !isVictory) {
       const targetIndex = LEVEL_1_SEQUENCE[guideIndex] - 1; // Convert 1-based to 0-based
       if (index === targetIndex) {
         flipStack(index);
         setGuideIndex(prev => prev + 1);
       }
-    } else {
+    } else if (!isAnimating && !isVictory) {
       flipStack(index);
     }
   };
@@ -93,13 +93,18 @@ export default function Game() {
   // Show guide hand only for level 1 and if not completed
   const showGuide = currentLevel === 1 && !tutorialState.level1Completed && guideIndex < LEVEL_1_SEQUENCE.length;
 
+  // Get current target index for highlighting
+  const currentTargetIndex = currentLevel === 1 && guideIndex < LEVEL_1_SEQUENCE.length 
+    ? LEVEL_1_SEQUENCE[guideIndex] - 1 
+    : undefined;
+
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-blue-600 via-primary/40 to-indigo-400">
       {showGuide && (
         <GuideHand
           sequence={LEVEL_1_SEQUENCE}
           currentIndex={guideIndex}
-          stackHeight={window.innerHeight * 0.6} // Approximate stack height
+          stackHeight={window.innerHeight * 0.6}
           containerHeight={window.innerHeight}
         />
       )}
@@ -150,6 +155,7 @@ export default function Game() {
           isAnimating={isAnimating}
           setIsAnimating={setIsAnimating}
           isVictory={isVictory}
+          targetIndex={currentTargetIndex}
         />
       </div>
 

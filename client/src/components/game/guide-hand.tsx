@@ -13,18 +13,17 @@ export const GuideHand: FC<GuideHandProps> = ({ sequence, currentIndex, stackHei
 
   useEffect(() => {
     if (currentIndex >= sequence.length) return;
-    
+
     // Target pancake's index (1-based to 0-based conversion)
     const targetPancakeIndex = sequence[currentIndex] - 1;
-    
+
     // Calculate Y position based on pancake position in stack
-    // Note: stackHeight is the total height of viewport
     const pancakeHeight = stackHeight / 5; // Assuming 5 pancakes
     const targetY = containerHeight / 2 - (targetPancakeIndex * pancakeHeight);
-    
+
     setPosition({
-      x: window.innerWidth / 2 + 200, // Position to the right of stack
-      y: targetY
+      x: window.innerWidth / 2 - 100, // Position closer to center
+      y: targetY - 20 // Slight offset to point at center
     });
   }, [sequence, currentIndex, stackHeight, containerHeight]);
 
@@ -43,7 +42,7 @@ export const GuideHand: FC<GuideHandProps> = ({ sequence, currentIndex, stackHei
         height="96" 
         viewBox="0 0 550 400" 
         className="drop-shadow-lg"
-        style={{ transform: 'rotate(180deg)' }} // Point left
+        style={{ transform: 'rotate(-135deg)' }} // Rotate to point upward with tilt
       >
         <symbol id="hand" viewBox="-364.275 -463.175 728.602 926.3">
           <g>

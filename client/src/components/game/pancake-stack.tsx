@@ -12,13 +12,13 @@ interface PancakeStackProps {
   targetIndex?: number; // New prop for highlighting target pancake
 }
 
-export function PancakeStack({ 
-  arrangement, 
-  onFlip, 
-  isAnimating, 
-  setIsAnimating, 
+export function PancakeStack({
+  arrangement,
+  onFlip,
+  isAnimating,
+  setIsAnimating,
   isVictory = false,
-  targetIndex 
+  targetIndex
 }: PancakeStackProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene>();
@@ -142,15 +142,15 @@ export function PancakeStack({
       const depth = 2;
       const radius = 0.2;
 
-      shape.moveTo(-width/2 + radius, -depth/2);
-      shape.lineTo(width/2 - radius, -depth/2);
-      shape.quadraticCurveTo(width/2, -depth/2, width/2, -depth/2 + radius);
-      shape.lineTo(width/2, depth/2 - radius);
-      shape.quadraticCurveTo(width/2, depth/2, width/2 - radius, depth/2);
-      shape.lineTo(-width/2 + radius, depth/2);
-      shape.quadraticCurveTo(-width/2, depth/2, -width/2, depth/2 - radius);
-      shape.lineTo(-width/2, -depth/2 + radius);
-      shape.quadraticCurveTo(-width/2, -depth/2, -width/2 + radius, -depth/2);
+      shape.moveTo(-width / 2 + radius, -depth / 2);
+      shape.lineTo(width / 2 - radius, -depth / 2);
+      shape.quadraticCurveTo(width / 2, -depth / 2, width / 2, -depth / 2 + radius);
+      shape.lineTo(width / 2, depth / 2 - radius);
+      shape.quadraticCurveTo(width / 2, depth / 2, width / 2 - radius, depth / 2);
+      shape.lineTo(-width / 2 + radius, depth / 2);
+      shape.quadraticCurveTo(-width / 2, depth / 2, -width / 2, depth / 2 - radius);
+      shape.lineTo(-width / 2, -depth / 2 + radius);
+      shape.quadraticCurveTo(-width / 2, -depth / 2, -width / 2 + radius, -depth / 2);
 
       const extrudeSettings = {
         steps: 1,
@@ -179,26 +179,56 @@ export function PancakeStack({
 
       // Add highlight effect if this is the target pancake
       if (targetIndex !== undefined && index === targetIndex) {
-        const edges = new THREE.EdgesGeometry(geometry);
-        const lineMaterial = new THREE.LineBasicMaterial({ 
+        const geometry = pancake.geometry as THREE.ExtrudeGeometry;
+
+        // Create a custom geometry for front edges only
+        const positions = [];
+        const vertices = [];
+
+        // Get the front face vertices
+        geometry.getAttribute('position').array.forEach((value, i) => {
+          if (i % 3 === 0) {
+            vertices.push([
+              geometry.getAttribute('position').array[i],
+              geometry.getAttribute('position').array[i + 1],
+              geometry.getAttribute('position').array[i + 2]
+            ]);
+          }
+        });
+
+        // Create edges for the front face only (y > 0)
+        vertices.forEach((vertex, i) => {
+          if (vertex[1] > 0) { // Only consider vertices on the front face
+            const nextVertex = vertices[(i + 1) % vertices.length];
+            if (nextVertex[1] > 0) { // If next vertex is also on front face
+              positions.push(...vertex, ...nextVertex);
+            }
+          }
+        });
+
+        const edgesGeometry = new THREE.BufferGeometry();
+        edgesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+
+        const lineMaterial = new THREE.LineBasicMaterial({
           color: 0xffffff,
           linewidth: 2,
           transparent: true,
           opacity: 0.8
         });
-        const outline = new THREE.LineSegments(edges, lineMaterial);
+
+        const outline = new THREE.LineSegments(edgesGeometry, lineMaterial);
         outline.rotation.copy(pancake.rotation);
         outline.position.copy(pancake.position);
         outline.scale.multiplyScalar(1.02); // Slightly larger to avoid z-fighting
 
         // Remove previous outline if exists
         if (outlineRef.current) {
-          groupRef.current.remove(outlineRef.current);
+          groupRef.current!.remove(outlineRef.current);
           outlineRef.current.geometry.dispose();
           (outlineRef.current.material as THREE.Material).dispose();
         }
 
-        groupRef.current.add(outline);
+        groupRef.current!.add(outline);
         outlineRef.current = outline;
 
         // Animate the outline
@@ -236,6 +266,14 @@ export function PancakeStack({
         const clickedIndex = pancakesRef.current.indexOf(intersects[0].object as THREE.Mesh);
 
         if (targetIndex === undefined || clickedIndex === targetIndex) {
+          // Remove highlight before starting flip animation
+          if (outlineRef.current) {
+            groupRef.current!.remove(outlineRef.current);
+            outlineRef.current.geometry.dispose();
+            (outlineRef.current.material as THREE.Material).dispose();
+            outlineRef.current = null;
+          }
+
           soundEffect.playClick();
           flipPancakes(clickedIndex);
         } else {

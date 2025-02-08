@@ -181,48 +181,22 @@ export function PancakeStack({
       if (targetIndex !== undefined && index === targetIndex) {
         const geometry = pancake.geometry as THREE.ExtrudeGeometry;
 
-        // Create a custom geometry for front edges only
+        // Create positions for just the front face edges
+        const width = size * 2;
+        const height = 0.4; // This is the extrude depth
         const positions = [];
-        const vertices = geometry.getAttribute('position');
-        const vertexCount = vertices.count;
 
-        // Find the maximum Y value to identify front face vertices
-        let maxY = -Infinity;
-        for (let i = 0; i < vertexCount; i++) {
-          const y = vertices.getY(i);
-          if (y > maxY) maxY = y;
-        }
+        // Top edge
+        positions.push(-width/2, height/2, depth/2, width/2, height/2, depth/2);
 
-        // Collect front face vertices (those with max Y value)
-        const frontVertices = [];
-        for (let i = 0; i < vertexCount; i++) {
-          if (Math.abs(vertices.getY(i) - maxY) < 0.01) { // Use small epsilon for floating point comparison
-            frontVertices.push({
-              x: vertices.getX(i),
-              y: vertices.getY(i),
-              z: vertices.getZ(i),
-              index: i
-            });
-          }
-        }
+        // Right edge
+        positions.push(width/2, height/2, depth/2, width/2, -height/2, depth/2);
 
-        // Sort vertices to ensure we connect them in the right order (clockwise)
-        frontVertices.sort((a, b) => {
-          // First sort by X coordinate
-          if (Math.abs(a.x - b.x) > 0.01) return a.x - b.x;
-          // If X is same, sort by Z
-          return a.z - b.z;
-        });
+        // Bottom edge
+        positions.push(width/2, -height/2, depth/2, -width/2, -height/2, depth/2);
 
-        // Connect adjacent vertices to form the front face outline
-        for (let i = 0; i < frontVertices.length; i++) {
-          const current = frontVertices[i];
-          const next = frontVertices[(i + 1) % frontVertices.length];
-          positions.push(
-            current.x, current.y, current.z,
-            next.x, next.y, next.z
-          );
-        }
+        // Left edge
+        positions.push(-width/2, -height/2, depth/2, -width/2, height/2, depth/2);
 
         const edgesGeometry = new THREE.BufferGeometry();
         edgesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
